@@ -1,6 +1,6 @@
 package main
 
-import "fmt"
+import "encoding/json"
 
 func hasNetwork(network map[string]map[string]bool, macs []string) (string, bool) {
 	for n := range network {
@@ -68,21 +68,31 @@ func hasMerge(network map[string]map[string]bool) (string, string, bool) {
 					}
 				}
 			}
-
 		}
-
 	}
 	return "none", "none", false
 }
 
-func main() {
-	network := make(map[string]map[string]bool)
-	macs := []string{"test", "test2", "test3", "test4"} 
-	fmt.Println(buildNetwork(network, macs))
-	macs = []string{"test6", "test5", "test7"} 
-	fmt.Println(buildNetwork(network, macs))
-	macs = []string{"test6", "test9", "test10"} 
-	fmt.Println(buildNetwork(network, macs))
-
-	fmt.Println(mergeNetwork(network))
+func dumpNetwork(network map[string]map[string]bool) []byte {
+	jsonByte, _ := json.Marshal(network)
+	return jsonByte
 }
+
+func loadNetwork(jsonByte []byte) map[string]map[string]bool {
+	res2 := make(map[string]map[string]bool)
+	json.Unmarshal(jsonByte, &res2)
+	return res2
+}
+
+// network := make(map[string]map[string]bool)
+// macs := []string{"test", "test2", "test3", "test4"}
+// fmt.Println(buildNetwork(network, macs))
+// macs = []string{"test6", "test5", "test7"}
+// fmt.Println(buildNetwork(network, macs))
+// macs = []string{"test6", "test9", "test10"}
+// fmt.Println(buildNetwork(network, macs))
+// fmt.Println(mergeNetwork(network))
+// n2 := dumpNetwork(network)
+// fmt.Println(string(n2))
+// n2a := loadNetwork(n2)
+// fmt.Println(n2a)

@@ -1,11 +1,14 @@
+
 # Compiled Object files, Static and Dynamic libs (Shared Objects)
 *.o
 *.a
 *.so
+*.exe
 
 # Folders
 _obj
 _test
+data
 
 # Architecture specific extensions/prefixes
 *.[568vq]
