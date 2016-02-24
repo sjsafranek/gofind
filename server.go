@@ -45,17 +45,20 @@ Options:`)
 	}
 	RuntimeArgs.SourcePath = path.Join(cwd, "data")
 
+	fmt.Println(getUniqueMacs("find"))
+	fmt.Println(getUniqueLocations("find"))
+
 	r := gin.Default()
 	r.POST("/fingerprint", handleFingerprint)
 	if RuntimeArgs.ServerCRT != "" && RuntimeArgs.ServerKey != "" {
-		fmt.Println("--------------------------")
+		Info.Println("--------------------------")
 		fmt.Println("find (version " + VersionNum + ") is up and running on https://" + RuntimeArgs.ExternalIP)
 		fmt.Println("--------------------------")
 		r.RunTLS(RuntimeArgs.Port, RuntimeArgs.ServerCRT, RuntimeArgs.ServerKey)
 	} else {
-		fmt.Println("--------------------------")
-		fmt.Println("find (version " + VersionNum + ") is up and running on http://" + RuntimeArgs.ExternalIP)
-		fmt.Println("--------------------------")
+		Info.Println("--------------------------")
+		Info.Println("find (version " + VersionNum + ") is up and running on http://" + RuntimeArgs.ExternalIP)
+		Info.Println("--------------------------")
 		r.Run(RuntimeArgs.Port)
 	}
 }

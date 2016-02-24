@@ -1,9 +1,60 @@
 package main
 
 import (
+	"io"
+	"io/ioutil"
 	"net"
+	"os"
 	"strings"
+	"time"
+
+	"log"
 )
+
+var (
+	Trace   *log.Logger
+	Info    *log.Logger
+	Warning *log.Logger
+	Debug   *log.Logger
+	Error   *log.Logger
+)
+
+func Init(
+	traceHandle io.Writer,
+	infoHandle io.Writer,
+	debugHandle io.Writer,
+	warningHandle io.Writer,
+	errorHandle io.Writer) {
+
+	Trace = log.New(traceHandle,
+		"TRACE : ",
+		log.Ldate|log.Ltime|log.Lshortfile)
+
+	Info = log.New(infoHandle,
+		"INFO : ",
+		log.Ldate|log.Ltime|log.Lshortfile)
+
+	Debug = log.New(debugHandle,
+		"DEBUG: ",
+		log.Ldate|log.Ltime|log.Lshortfile)
+
+	Warning = log.New(warningHandle,
+		"WARN : ",
+		log.Ldate|log.Ltime|log.Lshortfile)
+
+	Error = log.New(errorHandle,
+		"ERR  : ",
+		log.Ldate|log.Ltime|log.Lshortfile)
+}
+
+func init() {
+	Init(ioutil.Discard, os.Stdout, os.Stdout, os.Stdout, os.Stderr)
+
+	// Trace.Println("I have something standard to say")
+	// Info.Println("Special Information")
+	// Warning.Println("There is something you need to know about")
+	// Error.Println("Something has failed")
+}
 
 // GetLocalIP returns the local ip address
 func GetLocalIP() string {
@@ -21,4 +72,18 @@ func GetLocalIP() string {
 		}
 	}
 	return bestIP
+}
+
+func stringInSlice(s string, strings []string) bool {
+	for _, k := range strings {
+		if s == k {
+			return true
+		}
+	}
+	return false
+}
+
+func timeTrack(start time.Time, name string) {
+	elapsed := time.Since(start)
+	Debug.Println(name, " took ", elapsed)
 }
