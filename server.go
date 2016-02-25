@@ -45,11 +45,13 @@ Options:`)
 	}
 	RuntimeArgs.SourcePath = path.Join(cwd, "data")
 
-	fmt.Println(getUniqueMacs("find"))
-	fmt.Println(getUniqueLocations("find"))
+	// fmt.Println(getUniqueMacs("find"))
+	// fmt.Println(getUniqueLocations("find"))
+	makeFullNetwork("test")
 
 	r := gin.Default()
 	r.POST("/fingerprint", handleFingerprint)
+	r.POST("/learn", handleFingerprint)
 	if RuntimeArgs.ServerCRT != "" && RuntimeArgs.ServerKey != "" {
 		Info.Println("--------------------------")
 		fmt.Println("find (version " + VersionNum + ") is up and running on https://" + RuntimeArgs.ExternalIP)

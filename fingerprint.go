@@ -76,21 +76,7 @@ func putFingerprintIntoDatabase(res Fingerprint) error {
 		}
 		return err
 	})
-
-	db.View(func(tx *bolt.Tx) error {
-		// Assume bucket exists and has keys
-		b := tx.Bucket([]byte("fingerprints"))
-
-		c := b.Cursor()
-
-		for k, v := c.First(); k != nil; k, v = c.Next() {
-			fmt.Printf("key=%s, value=%s\n", k, v)
-		}
-
-		return nil
-	})
 	return err
-
 }
 
 func handleFingerprint(c *gin.Context) {
@@ -99,6 +85,7 @@ func handleFingerprint(c *gin.Context) {
 		cleanFingerprint(&json)
 		if json.Location != "" {
 			putFingerprintIntoDatabase(json)
+			Debug.Println("Inserted fingerprint for " + json.Username + " (" + json.Group + ") at " + json.Location)
 			c.JSON(http.StatusOK, gin.H{"status": "you are logged in"})
 		} else {
 			c.JSON(http.StatusOK, gin.H{"status": "your current location is XYZ"})
