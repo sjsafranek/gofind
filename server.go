@@ -54,6 +54,8 @@ Options:`)
 	getParameters("find", &ps)
 	calculatePriors("find", &ps)
 	// fmt.Println(string(dumpParameters(ps)))
+	saveParameters("find", ps)
+	ps, _ = openParameters("find")
 
 	r := gin.Default()
 	r.LoadHTMLGlob("templates/*")

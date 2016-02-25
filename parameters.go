@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"path"
 	"time"
@@ -63,6 +64,49 @@ func loadParameters(jsonByte []byte) FullParameters {
 	var res2 FullParameters
 	json.Unmarshal(jsonByte, &res2)
 	return res2
+}
+
+func saveParameters(group string, res FullParameters) error {
+	defer timeTrack(time.Now(), "saveParameters")
+	db, err := bolt.Open(path.Join(RuntimeArgs.SourcePath, group+".db"), 0600, nil)
+	if err != nil {
+		Error.Println(err)
+	}
+	defer db.Close()
+
+	err = db.Update(func(tx *bolt.Tx) error {
+		bucket, err := tx.CreateBucketIfNotExists([]byte("resources"))
+		if err != nil {
+			return fmt.Errorf("create bucket: %s", err)
+		}
+
+		err = bucket.Put([]byte("fullParameters"), dumpParameters(res))
+		if err != nil {
+			return fmt.Errorf("could add to bucket: %s", err)
+		}
+		return err
+	})
+	return err
+}
+
+func openParameters(group string) (FullParameters, error) {
+	defer timeTrack(time.Now(), "openParameters")
+
+	var ps FullParameters = *NewFullParameters()
+	db, err := bolt.Open(path.Join(RuntimeArgs.SourcePath, group+".db"), 0600, nil)
+	if err != nil {
+		Error.Println(err)
+	}
+	defer db.Close()
+
+	err = db.View(func(tx *bolt.Tx) error {
+		// Assume bucket exists and has keys
+		b := tx.Bucket([]byte("resources"))
+		v := b.Get([]byte("fullParameters"))
+		ps = loadParameters(v)
+		return nil
+	})
+	return ps, err
 }
 
 func getParameters(group string, ps *FullParameters) {
