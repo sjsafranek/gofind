@@ -9,6 +9,7 @@ import (
 	"os"
 	"path"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -50,23 +51,29 @@ Options:`)
 	RuntimeArgs.SourcePath = path.Join(cwd, "data")
 
 	var ps FullParameters = *NewFullParameters()
-	getParameters("test", &ps)
-	calculatePriors("test", &ps)
-	fmt.Println(string(dumpParameters(ps)))
+	getParameters("find", &ps)
+	calculatePriors("find", &ps)
+	// fmt.Println(string(dumpParameters(ps)))
 
 	r := gin.Default()
 	r.LoadHTMLGlob("templates/*")
 	r.GET("/", func(c *gin.Context) {
+		defer timeTrack(time.Now(), "Loading JSON")
 		datas := []template.JS{}
 		names := []template.JS{}
 		indexNames := []template.JS{}
 		it := 0
-		for m, n := range ps.Priors["0"].P["office"] {
-			names = append(names, template.JS(string(m)))
-			jsonByte, _ := json.Marshal(n)
-			datas = append(datas, template.JS(string(jsonByte)))
-			indexNames = append(indexNames, template.JS(strconv.Itoa(it)))
-			it++
+		for m, n := range ps.Priors["0"].P["bathroom"] {
+			for i, val := range n {
+				if val > float32(0) && i > 20 {
+					names = append(names, template.JS(string(m)))
+					jsonByte, _ := json.Marshal(n)
+					datas = append(datas, template.JS(string(jsonByte)))
+					indexNames = append(indexNames, template.JS(strconv.Itoa(it)))
+					it++
+					break
+				}
+			}
 		}
 		rsiRange, _ := json.Marshal(RssiRange)
 		c.HTML(http.StatusOK, "plot.tmpl", gin.H{

@@ -67,12 +67,16 @@ func calculatePriors(group string, ps *FullParameters) {
 			networkName, inNetwork := hasNetwork(ps.NetworkMacs, macs)
 			if inNetwork {
 				for _, router := range v2.WifiFingerprint {
-					ps.Priors[networkName].P[v2.Location][router.Mac][router.Rssi-MinRssi] += PdfType[0]
-					for i, val := range PdfType {
-						if i > 0 {
-							ps.Priors[networkName].P[v2.Location][router.Mac][router.Rssi-MinRssi-i] += val
-							ps.Priors[networkName].P[v2.Location][router.Mac][router.Rssi-MinRssi+i] += val
+					if router.Rssi > MinRssi {
+						ps.Priors[networkName].P[v2.Location][router.Mac][router.Rssi-MinRssi] += PdfType[0]
+						for i, val := range PdfType {
+							if i > 0 {
+								ps.Priors[networkName].P[v2.Location][router.Mac][router.Rssi-MinRssi-i] += val
+								ps.Priors[networkName].P[v2.Location][router.Mac][router.Rssi-MinRssi+i] += val
+							}
 						}
+					} else {
+						Warning.Println(router.Rssi)
 					}
 				}
 			}
