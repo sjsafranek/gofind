@@ -20,26 +20,26 @@ type PriorParameters struct {
 
 // Array of parameters used for the network
 type FullParameters struct {
-	NetworkMacs   map[string]map[string]bool // map of networks and then the associated macs in each
-	NetworkLocs   map[string]map[string]bool // map of the networks, and then the associated locations in each
-	MacCount      map[string]int             // number of each mac
-	MacCountByLoc map[string]map[string]int  // number of each mac, by location
-	UniqueLocs    []string
-	UniqueMacs    []string
-	Priors        map[string]PriorParameters // generate priors for each network
-	UsefulMacs    map[string]bool            // list of useful macs
+	NetworkMacs    map[string]map[string]bool // map of networks and then the associated macs in each
+	NetworkLocs    map[string]map[string]bool // map of the networks, and then the associated locations in each
+	MacVariability map[string]float32         // variability of macs
+	MacCount       map[string]int             // number of each mac
+	MacCountByLoc  map[string]map[string]int  // number of each mac, by location
+	UniqueLocs     []string
+	UniqueMacs     []string
+	Priors         map[string]PriorParameters // generate priors for each network
 }
 
 func NewFullParameters() *FullParameters {
 	return &FullParameters{
-		NetworkMacs:   make(map[string]map[string]bool),
-		NetworkLocs:   make(map[string]map[string]bool),
-		MacCount:      make(map[string]int),
-		MacCountByLoc: make(map[string]map[string]int),
-		UniqueMacs:    []string{},
-		UniqueLocs:    []string{},
-		Priors:        make(map[string]PriorParameters),
-		UsefulMacs:    make(map[string]bool),
+		NetworkMacs:    make(map[string]map[string]bool),
+		NetworkLocs:    make(map[string]map[string]bool),
+		MacCount:       make(map[string]int),
+		MacCountByLoc:  make(map[string]map[string]int),
+		UniqueMacs:     []string{},
+		UniqueLocs:     []string{},
+		Priors:         make(map[string]PriorParameters),
+		MacVariability: make(map[string]float32),
 	}
 }
 

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"path"
 	"time"
@@ -32,6 +31,7 @@ func calculatePriors(group string, ps *FullParameters) {
 	}
 
 	// Initialization
+	ps.MacVariability = make(map[string]float32)
 	for n := range ps.Priors {
 		for loc := range ps.NetworkLocs[n] {
 			ps.Priors[n].P[loc] = make(map[string][]float32)
@@ -92,13 +92,14 @@ func calculatePriors(group string, ps *FullParameters) {
 		}
 	}
 
-	// normalize P and nP
+	// normalize P and nP and determine MacVariability
 	rssiRange := make([]float32, RssiPartitions)
 	for i := 0; i < len(rssiRange); i++ {
 		rssiRange[i] = float32(MinRssi + i)
 	}
 	for n := range ps.Priors {
 		macAverages := make(map[string][]float32)
+
 		for loc := range ps.NetworkLocs[n] {
 			for mac := range ps.NetworkMacs[n] {
 				total := float32(0)
@@ -128,7 +129,24 @@ func calculatePriors(group string, ps *FullParameters) {
 				}
 			}
 		}
-		fmt.Println(macAverages)
+
+		// Determine MacVariability
+		for mac := range macAverages {
+			if len(macAverages[mac]) <= 1 {
+				ps.MacVariability[mac] = float32(1)
+			} else {
+				maxVal := float32(-10000)
+				for _, val := range macAverages[mac] {
+					if val > maxVal {
+						maxVal = val
+					}
+				}
+				for i, val := range macAverages[mac] {
+					macAverages[mac][i] = maxVal / val
+				}
+				ps.MacVariability[mac] = standardDeviation(macAverages[mac])
+			}
+		}
 	}
 
 }

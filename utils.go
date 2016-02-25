@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"io"
 	"io/ioutil"
+	"math"
 	"net"
 	"os"
 	"strings"
@@ -94,4 +95,21 @@ func getMD5Hash(text string) string {
 	hasher := md5.New()
 	hasher.Write([]byte(text))
 	return hex.EncodeToString(hasher.Sum(nil))
+}
+
+func standardDeviation(vals []float32) float32 {
+	sum := float64(0)
+	for _, val := range vals {
+		sum += float64(val)
+	}
+	meanVal := sum / float64(len(vals))
+
+	sum = float64(0)
+	for _, val := range vals {
+		sum += math.Pow(float64(val)-meanVal, 2)
+	}
+	sum = sum / (float64(len(vals)) - 1)
+	sd := math.Sqrt(sum)
+
+	return float32(sd)
 }

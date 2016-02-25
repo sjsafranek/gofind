@@ -47,8 +47,8 @@ Options:`)
 
 	var ps FullParameters = *NewFullParameters()
 	// fmt.Println(string(dumpParameters(ps)))
-	getParameters("test2", &ps)
-	calculatePriors("test2", &ps)
+	getParameters("test", &ps)
+	calculatePriors("test", &ps)
 
 	r := gin.Default()
 	r.POST("/fingerprint", handleFingerprint)
