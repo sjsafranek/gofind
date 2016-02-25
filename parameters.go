@@ -11,12 +11,11 @@ import (
 )
 
 type PriorParameters struct {
-	Usefulness float64
-	Mixin      float64
-	P          map[string]map[string][]float32 // standard P
-	NP         map[string]map[string][]float32 // standard nP
-	MacFreq    map[string]map[string]float32   // Frequency of a mac in a certain location
-	NMacFreq   map[string]map[string]float32   // Frequency of a mac, in everywhere BUT a certain location
+	P        map[string]map[string][]float32 // standard P
+	NP       map[string]map[string][]float32 // standard nP
+	MacFreq  map[string]map[string]float32   // Frequency of a mac in a certain location
+	NMacFreq map[string]map[string]float32   // Frequency of a mac, in everywhere BUT a certain location
+	Special  map[string]float32
 }
 
 // Array of parameters used for the network
@@ -46,12 +45,11 @@ func NewFullParameters() *FullParameters {
 
 func NewPriorParameters() *PriorParameters {
 	return &PriorParameters{
-		Usefulness: 0,
-		Mixin:      0.5,
-		P:          make(map[string]map[string][]float32),
-		NP:         make(map[string]map[string][]float32),
-		MacFreq:    make(map[string]map[string]float32),
-		NMacFreq:   make(map[string]map[string]float32),
+		P:        make(map[string]map[string][]float32),
+		NP:       make(map[string]map[string][]float32),
+		MacFreq:  make(map[string]map[string]float32),
+		NMacFreq: make(map[string]map[string]float32),
+		Special:  make(map[string]float32),
 	}
 }
 

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"path"
 	"time"
@@ -38,9 +39,12 @@ func calculatePriors(group string, ps *FullParameters) {
 	// Initialization
 	ps.MacVariability = make(map[string]float32)
 	for n := range ps.Priors {
+		ps.Priors[n].Special["MacFreqMin"] = float32(100)
 		for loc := range ps.NetworkLocs[n] {
 			ps.Priors[n].P[loc] = make(map[string][]float32)
 			ps.Priors[n].NP[loc] = make(map[string][]float32)
+			ps.Priors[n].MacFreq[loc] = make(map[string]float32)
+			ps.Priors[n].NMacFreq[loc] = make(map[string]float32)
 			for mac := range ps.NetworkMacs[n] {
 				ps.Priors[n].P[loc][mac] = make([]float32, RssiPartitions)
 				ps.Priors[n].NP[loc][mac] = make([]float32, RssiPartitions)
@@ -158,5 +162,45 @@ func calculatePriors(group string, ps *FullParameters) {
 			}
 		}
 	}
+	// Determine mac frequencies and normalize
+	for n := range ps.Priors {
+		for loc := range ps.NetworkLocs[n] {
+			maxCount := 0
+			for mac := range ps.MacCountByLoc[loc] {
+				if ps.MacCountByLoc[loc][mac] > maxCount {
+					maxCount = ps.MacCountByLoc[loc][mac]
+				}
+			}
+			for mac := range ps.MacCountByLoc[loc] {
+				ps.Priors[n].MacFreq[loc][mac] = float32(ps.MacCountByLoc[loc][mac]) / float32(maxCount)
+				if ps.Priors[n].MacFreq[loc][mac] < ps.Priors[n].Special["MacFreqMin"] {
+					ps.Priors[n].Special["MacFreqMin"] = ps.Priors[n].MacFreq[loc][mac]
+				}
+			}
+		}
+	}
+	fmt.Println(ps.Priors["0"].MacFreq)
+
+	// Deteremine negative mac frequencies
+	for n := range ps.Priors {
+		for loc1 := range ps.Priors[n].MacFreq {
+			sum := float32(0)
+			for loc2 := range ps.Priors[n].MacFreq {
+				if loc2 != loc1 {
+					for mac := range ps.Priors[n].MacFreq[loc2] {
+						ps.Priors[n].NMacFreq[loc1][mac] += ps.Priors[n].MacFreq[loc2][mac]
+						sum++
+					}
+				}
+			}
+			// Normalize
+			if sum > 0 {
+				for mac := range ps.Priors[n].MacFreq[loc1] {
+					ps.Priors[n].NMacFreq[loc1][mac] = ps.Priors[n].NMacFreq[loc1][mac] / sum
+				}
+			}
+		}
+	}
+	fmt.Println(ps.Priors["0"].NMacFreq)
 
 }
