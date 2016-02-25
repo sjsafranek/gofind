@@ -45,17 +45,10 @@ Options:`)
 	}
 	RuntimeArgs.SourcePath = path.Join(cwd, "data")
 
-	// fmt.Println(getUniqueMacs("find"))
-	// fmt.Println(getUniqueLocations("find"))
 	var ps FullParameters = *NewFullParameters()
-	fmt.Println(string(dumpParameters(ps)))
-	getParameters("test", &ps)
-	// ps.NetworkPriors = append(ps.NetworkPriors, *NewPriorParameters())
-	fmt.Println(string(dumpParameters(ps)))
-	// fmt.Println(loadParameters(dumpParameters(ps)))
-
-	fmt.Println(getMacCount("test"))
-	fmt.Println(getMacCountByLoc("test"))
+	// fmt.Println(string(dumpParameters(ps)))
+	getParameters("test2", &ps)
+	calculatePriors("test2", &ps)
 
 	r := gin.Default()
 	r.POST("/fingerprint", handleFingerprint)

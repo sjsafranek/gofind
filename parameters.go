@@ -10,13 +10,12 @@ import (
 )
 
 type PriorParameters struct {
-	NetworkName string
-	Usefulness  float64
-	Mixin       float64
-	P           map[string]map[string][]float32 // standard P
-	nP          map[string]map[string][]float32 // standard nP
-	MacFreq     map[string]map[string]float32   // Frequency of a mac in a certain location
-	nMacFreq    map[string]map[string]float32   // Frequency of a mac, in everywhere BUT a certain location
+	Usefulness float64
+	Mixin      float64
+	P          map[string]map[string][]float32 // standard P
+	NP         map[string]map[string][]float32 // standard nP
+	MacFreq    map[string]map[string]float32   // Frequency of a mac in a certain location
+	NMacFreq   map[string]map[string]float32   // Frequency of a mac, in everywhere BUT a certain location
 }
 
 // Array of parameters used for the network
@@ -27,8 +26,8 @@ type FullParameters struct {
 	MacCountByLoc map[string]map[string]int  // number of each mac, by location
 	UniqueLocs    []string
 	UniqueMacs    []string
-	NetworkPriors []PriorParameters // generate priors for each network
-	UsefulMacs    map[string]bool   // list of useful macs
+	Priors        map[string]PriorParameters // generate priors for each network
+	UsefulMacs    map[string]bool            // list of useful macs
 }
 
 func NewFullParameters() *FullParameters {
@@ -39,20 +38,19 @@ func NewFullParameters() *FullParameters {
 		MacCountByLoc: make(map[string]map[string]int),
 		UniqueMacs:    []string{},
 		UniqueLocs:    []string{},
-		NetworkPriors: []PriorParameters{},
+		Priors:        make(map[string]PriorParameters),
 		UsefulMacs:    make(map[string]bool),
 	}
 }
 
 func NewPriorParameters() *PriorParameters {
 	return &PriorParameters{
-		NetworkName: "-1",
-		Usefulness:  0,
-		Mixin:       0.5,
-		P:           make(map[string]map[string][]float32),
-		nP:          make(map[string]map[string][]float32),
-		MacFreq:     make(map[string]map[string]float32),
-		nMacFreq:    make(map[string]map[string]float32),
+		Usefulness: 0,
+		Mixin:      0.5,
+		P:          make(map[string]map[string][]float32),
+		NP:         make(map[string]map[string][]float32),
+		MacFreq:    make(map[string]map[string]float32),
+		NMacFreq:   make(map[string]map[string]float32),
 	}
 }
 
