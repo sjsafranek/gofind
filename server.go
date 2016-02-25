@@ -1,10 +1,14 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
+	"html/template"
+	"net/http"
 	"os"
 	"path"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -46,11 +50,32 @@ Options:`)
 	RuntimeArgs.SourcePath = path.Join(cwd, "data")
 
 	var ps FullParameters = *NewFullParameters()
-	// fmt.Println(string(dumpParameters(ps)))
 	getParameters("test", &ps)
 	calculatePriors("test", &ps)
+	fmt.Println(string(dumpParameters(ps)))
 
 	r := gin.Default()
+	r.LoadHTMLGlob("templates/*")
+	r.GET("/", func(c *gin.Context) {
+		datas := []template.JS{}
+		names := []template.JS{}
+		indexNames := []template.JS{}
+		it := 0
+		for m, n := range ps.Priors["0"].P["office"] {
+			names = append(names, template.JS(string(m)))
+			jsonByte, _ := json.Marshal(n)
+			datas = append(datas, template.JS(string(jsonByte)))
+			indexNames = append(indexNames, template.JS(strconv.Itoa(it)))
+			it++
+		}
+		rsiRange, _ := json.Marshal(RssiRange)
+		c.HTML(http.StatusOK, "plot.tmpl", gin.H{
+			"RssiRange":  template.JS(string(rsiRange)),
+			"Datas":      datas,
+			"Names":      names,
+			"IndexNames": indexNames,
+		})
+	})
 	r.POST("/fingerprint", handleFingerprint)
 	r.POST("/learn", handleFingerprint)
 	if RuntimeArgs.ServerCRT != "" && RuntimeArgs.ServerKey != "" {
