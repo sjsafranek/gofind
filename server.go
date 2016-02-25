@@ -47,7 +47,14 @@ Options:`)
 
 	// fmt.Println(getUniqueMacs("find"))
 	// fmt.Println(getUniqueLocations("find"))
-	makeFullNetwork("test")
+	var ps FullParameters = *NewFullParameters()
+	ps.NetworkMacs, ps.NetworkLocs = makeFullNetwork("test")
+	ps.NetworkPriors = append(ps.NetworkPriors, *NewPriorParameters())
+	fmt.Println(string(dumpParameters(ps)))
+	fmt.Println(loadParameters(dumpParameters(ps)))
+
+	fmt.Println(getMacCount("test"))
+	fmt.Println(getMacCountByLoc("test"))
 
 	r := gin.Default()
 	r.POST("/fingerprint", handleFingerprint)

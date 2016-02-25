@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"path"
 	"strconv"
@@ -10,15 +9,16 @@ import (
 	"github.com/boltdb/bolt"
 )
 
-func makeFullNetwork(group string) {
-	network := make(map[string]map[string]bool)
-	networkLocs := make(map[string]map[string]bool)
+func makeFullNetwork(group string) (network map[string]map[string]bool, networkLocs map[string]map[string]bool) {
+	network = make(map[string]map[string]bool)
+	networkLocs = make(map[string]map[string]bool)
 	db, err := bolt.Open(path.Join(RuntimeArgs.SourcePath, group+".db"), 0600, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer db.Close()
 
+	// Get the macs for each graph
 	db.View(func(tx *bolt.Tx) error {
 		// Assume bucket exists and has keys
 		b := tx.Bucket([]byte("fingerprints"))
@@ -33,9 +33,9 @@ func makeFullNetwork(group string) {
 		}
 		return nil
 	})
-	fmt.Println(network)
 	network = mergeNetwork(network)
 
+	// Get the locations for each graph
 	db.View(func(tx *bolt.Tx) error {
 		// Assume bucket exists and has keys
 		b := tx.Bucket([]byte("fingerprints"))
@@ -58,8 +58,8 @@ func makeFullNetwork(group string) {
 		}
 		return nil
 	})
-	fmt.Println(network)
-	fmt.Println(networkLocs)
+
+	return
 }
 
 func hasNetwork(network map[string]map[string]bool, macs []string) (string, bool) {
