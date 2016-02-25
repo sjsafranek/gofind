@@ -2,65 +2,8 @@ package main
 
 import (
 	"encoding/json"
-	"log"
-	"path"
 	"strconv"
-
-	"github.com/boltdb/bolt"
 )
-
-func makeFullNetwork(group string) (network map[string]map[string]bool, networkLocs map[string]map[string]bool) {
-	network = make(map[string]map[string]bool)
-	networkLocs = make(map[string]map[string]bool)
-	db, err := bolt.Open(path.Join(RuntimeArgs.SourcePath, group+".db"), 0600, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close()
-
-	// Get the macs for each graph
-	db.View(func(tx *bolt.Tx) error {
-		// Assume bucket exists and has keys
-		b := tx.Bucket([]byte("fingerprints"))
-		c := b.Cursor()
-		for k, v := c.First(); k != nil; k, v = c.Next() {
-			v2 := loadFingerprint(v)
-			macs := []string{}
-			for _, router := range v2.WifiFingerprint {
-				macs = append(macs, router.Mac)
-			}
-			network = buildNetwork(network, macs)
-		}
-		return nil
-	})
-	network = mergeNetwork(network)
-
-	// Get the locations for each graph
-	db.View(func(tx *bolt.Tx) error {
-		// Assume bucket exists and has keys
-		b := tx.Bucket([]byte("fingerprints"))
-		c := b.Cursor()
-		for k, v := c.First(); k != nil; k, v = c.Next() {
-			v2 := loadFingerprint(v)
-			macs := []string{}
-			for _, router := range v2.WifiFingerprint {
-				macs = append(macs, router.Mac)
-			}
-			networkName, inNetwork := hasNetwork(network, macs)
-			if inNetwork {
-				if _, ok := networkLocs[networkName]; !ok {
-					networkLocs[networkName] = make(map[string]bool)
-				}
-				if _, ok := networkLocs[networkName][v2.Location]; !ok {
-					networkLocs[networkName][v2.Location] = true
-				}
-			}
-		}
-		return nil
-	})
-
-	return
-}
 
 func hasNetwork(network map[string]map[string]bool, macs []string) (string, bool) {
 	for n := range network {
