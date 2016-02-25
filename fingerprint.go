@@ -80,12 +80,13 @@ func putFingerprintIntoDatabase(res Fingerprint) error {
 }
 
 func handleFingerprint(c *gin.Context) {
-	var json Fingerprint
-	if c.BindJSON(&json) == nil {
-		cleanFingerprint(&json)
-		if json.Location != "" {
-			putFingerprintIntoDatabase(json)
-			Debug.Println("Inserted fingerprint for " + json.Username + " (" + json.Group + ") at " + json.Location)
+	var jsonFingerprint Fingerprint
+	if c.BindJSON(&jsonFingerprint) == nil {
+		cleanFingerprint(&jsonFingerprint)
+		if jsonFingerprint.Location != "" {
+			putFingerprintIntoDatabase(jsonFingerprint)
+			Debug.Println("Inserted fingerprint for " + jsonFingerprint.Username + " (" + jsonFingerprint.Group + ") at " + jsonFingerprint.Location)
+			calculatePosterior(jsonFingerprint)
 			c.JSON(http.StatusOK, gin.H{"status": "you are logged in"})
 		} else {
 			c.JSON(http.StatusOK, gin.H{"status": "your current location is XYZ"})
