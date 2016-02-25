@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"path"
 	"time"
@@ -40,6 +39,7 @@ func calculatePriors(group string, ps *FullParameters) {
 	ps.MacVariability = make(map[string]float32)
 	for n := range ps.Priors {
 		ps.Priors[n].Special["MacFreqMin"] = float32(100)
+		ps.Priors[n].Special["NMacFreqMin"] = float32(100)
 		for loc := range ps.NetworkLocs[n] {
 			ps.Priors[n].P[loc] = make(map[string][]float32)
 			ps.Priors[n].NP[loc] = make(map[string][]float32)
@@ -107,13 +107,16 @@ func calculatePriors(group string, ps *FullParameters) {
 		}
 	}
 
-	// normalize P and nP and determine MacVariability
-
+	// Add in absentee, normalize P and nP and determine MacVariability
 	for n := range ps.Priors {
 		macAverages := make(map[string][]float32)
 
 		for loc := range ps.NetworkLocs[n] {
 			for mac := range ps.NetworkMacs[n] {
+				for i := range ps.Priors[n].P[loc][mac] {
+					ps.Priors[n].P[loc][mac][i] += Absentee
+					ps.Priors[n].NP[loc][mac][i] += Absentee
+				}
 				total := float32(0)
 				for _, val := range ps.Priors[n].P[loc][mac] {
 					total += val
@@ -162,6 +165,7 @@ func calculatePriors(group string, ps *FullParameters) {
 			}
 		}
 	}
+
 	// Determine mac frequencies and normalize
 	for n := range ps.Priors {
 		for loc := range ps.NetworkLocs[n] {
@@ -179,9 +183,8 @@ func calculatePriors(group string, ps *FullParameters) {
 			}
 		}
 	}
-	fmt.Println(ps.Priors["0"].MacFreq)
 
-	// Deteremine negative mac frequencies
+	// Deteremine negative mac frequencies and normalize
 	for n := range ps.Priors {
 		for loc1 := range ps.Priors[n].MacFreq {
 			sum := float32(0)
@@ -197,10 +200,12 @@ func calculatePriors(group string, ps *FullParameters) {
 			if sum > 0 {
 				for mac := range ps.Priors[n].MacFreq[loc1] {
 					ps.Priors[n].NMacFreq[loc1][mac] = ps.Priors[n].NMacFreq[loc1][mac] / sum
+					if ps.Priors[n].NMacFreq[loc1][mac] < ps.Priors[n].Special["NMacFreqMin"] {
+						ps.Priors[n].Special["NMacFreqMin"] = ps.Priors[n].NMacFreq[loc1][mac]
+					}
 				}
 			}
 		}
 	}
-	fmt.Println(ps.Priors["0"].NMacFreq)
 
 }
