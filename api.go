@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -11,6 +12,55 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/gin-gonic/gin"
 )
+
+type UserPositionJson struct {
+	Time     string `json:"time"`
+	Location string `json:"location"`
+	Labels   string `json:"labels"`
+	Pcts     string `json:"pcts"`
+}
+
+func getPositionBreakdown(group string, user string) {
+	db, err := bolt.Open(path.Join(RuntimeArgs.SourcePath, group+".db"), 0600, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	var userJson UserPositionJson
+	var fullJson Fingerprint
+	err = db.View(func(tx *bolt.Tx) error {
+		// Assume bucket exists and has keys
+		b := tx.Bucket([]byte("fingerprints-track"))
+		if b == nil {
+			return nil
+		}
+		c := b.Cursor()
+		for k, v := c.Last(); k != nil; k, v = c.Prev() {
+			v2 := loadFingerprint(v)
+			if v2.Username == user {
+				userJson.Time = string(k)
+				fullJson = v2
+				return nil
+			}
+		}
+		return fmt.Errorf("User " + user + " not found")
+	})
+	db.Close()
+	if err == nil {
+		location, bayes := calculatePosterior(fullJson, *NewFullParameters())
+		labels := []string{}
+		nums := []float64{}
+		for k, v := range bayes {
+			labels = append(labels, k)
+			nums = append(nums, v)
+		}
+		foo, _ := json.Marshal(nums)
+		userJson.Pcts = string(foo)
+		foo, _ = json.Marshal(labels)
+		userJson.Labels = string(foo)
+		userJson.Location = location
+	}
+	fmt.Println(userJson)
+}
 
 func calculate(c *gin.Context) {
 	group := c.DefaultQuery("group", "noneasdf")

@@ -60,6 +60,8 @@ Options:`)
 	optimizePriors("findtest2")
 	ps, _ = openParameters("findtest2")
 
+	getPositionBreakdown("findtest2", "zack")
+
 	r := gin.Default()
 	r.LoadHTMLGlob("templates/*")
 	r.Static("static/", "static/")
