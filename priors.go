@@ -30,6 +30,7 @@ func init() {
 }
 
 func optimizePriors(group string) {
+	defer timeTrack(time.Now(), "optimizePriors")
 	var ps FullParameters = *NewFullParameters()
 	getParameters(group, &ps)
 	calculatePriors(group, &ps)
