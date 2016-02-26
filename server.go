@@ -64,6 +64,34 @@ Options:`)
 
 	r := gin.Default()
 	r.LoadHTMLGlob("templates/*")
+	r.Static("static/", "static/")
+	r.GET("/dashboard/:group", func(c *gin.Context) {
+		group := c.Param("group")
+		ps, _ := openParameters(group)
+		type DashboardData struct {
+			Networks         []string
+			Locations        map[string][]string
+			LocationAccuracy map[string]int
+			LocationCount    map[string]int
+		}
+		var dash DashboardData
+		dash.Networks = []string{}
+		dash.Locations = make(map[string][]string)
+		dash.LocationAccuracy = make(map[string]int)
+		dash.LocationCount = make(map[string]int)
+		for n := range ps.NetworkLocs {
+			dash.Networks = append(dash.Networks, n)
+			dash.Locations[n] = []string{}
+			for loc := range ps.NetworkLocs[n] {
+				dash.Locations[n] = append(dash.Locations[n], loc)
+				dash.LocationAccuracy[loc] = ps.Results[n].Accuracy[loc]
+				dash.LocationCount[loc] = ps.Results[n].TotalLocations[loc]
+			}
+		}
+		c.HTML(http.StatusOK, "dashboard.tmpl", gin.H{
+			"Dash": dash,
+		})
+	})
 	r.GET("/explore/:group/:network/:location", func(c *gin.Context) {
 		defer timeTrack(time.Now(), "Loading JSON")
 		group := c.Param("group")
