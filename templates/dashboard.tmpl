@@ -202,9 +202,14 @@
             <div class="panel-body">
               {{ range $locIndex, $loc := index $.Dash.Locations $element }}
               <dl>
-                <dt>{{ $loc }} &nbsp;<a id="{{ $loc }}" class="editloc"><span class="fa fa-pencil-square-o"></span></a>&nbsp;<a id="{{ $loc }}" class="deleteloc"><i class="fa fa-trash"></i></a>&nbsp;</dt>
+                <dt>
+                  <a  href="#" onClick="window.open('/explore/{{ $.Group }}/{{ $element }}/{{ $loc }}','pagename','resizable,height=600,width=1000'); return false;">
+                  {{ $loc }}
+                </a>
+                 &nbsp;
+                  <a id="{{ $loc }}" class="editloc"><span class="fa fa-pencil-square-o"></span></a>&nbsp;<a id="{{ $loc }}" class="deleteloc"><i class="fa fa-trash"></i></a>&nbsp;</dt>
                 <dd>({{ index $.Dash.LocationCount $loc }}) &nbsp;
-                  <span class="bg-success">{{ index $.Dash.LocationAccuracy $loc }}%  </span>
+                  <span class="bg-success"><a  href="#" onClick="window.open('/pie/{{ $.Group }}/{{ $element }}/{{ $loc }}','pagename','resizable,height=380,width=480'); return false;">{{ index $.Dash.LocationAccuracy $loc }}%</a>  </span>
                 </dd>
               </dl>
               {{ end }}

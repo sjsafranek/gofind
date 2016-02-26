@@ -19,9 +19,10 @@ type PriorParameters struct {
 }
 
 type ResultsParameters struct {
-	Accuracy         map[string]int // accuracy measurement for a given location
-	TotalLocations   map[string]int // number of locations
-	CorrectLocations map[string]int // number of times guessed correctly
+	Accuracy         map[string]int            // accuracy measurement for a given location
+	TotalLocations   map[string]int            // number of locations
+	CorrectLocations map[string]int            // number of times guessed correctly
+	Guess            map[string]map[string]int // correct -> guess -> times
 }
 
 // Array of parameters used for the network
@@ -68,6 +69,7 @@ func NewResultsParameters() *ResultsParameters {
 		Accuracy:         make(map[string]int),
 		TotalLocations:   make(map[string]int),
 		CorrectLocations: make(map[string]int),
+		Guess:            make(map[string]map[string]int),
 	}
 }
 

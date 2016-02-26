@@ -57,14 +57,30 @@ Options:`)
 	saveParameters("findtest2", ps)
 	fmt.Println(ps.MacVariability)
 	fmt.Println(ps.NetworkLocs)
-	ps, _ = openParameters("findtest2")
 	optimizePriors("findtest2")
-
-	fmt.Println(ps.NetworkLocs["0"])
+	ps, _ = openParameters("findtest2")
 
 	r := gin.Default()
 	r.LoadHTMLGlob("templates/*")
 	r.Static("static/", "static/")
+	r.GET("/pie/:group/:network/:location", func(c *gin.Context) {
+		group := c.Param("group")
+		network := c.Param("network")
+		location := c.Param("location")
+		ps, _ := openParameters(group)
+		vals := []int{}
+		names := []string{}
+		for guessloc, val := range ps.Results[network].Guess[location] {
+			names = append(names, guessloc)
+			vals = append(vals, val)
+		}
+		namesJSON, _ := json.Marshal(names)
+		valsJSON, _ := json.Marshal(vals)
+		c.HTML(http.StatusOK, "pie.tmpl", gin.H{
+			"Names": template.JS(namesJSON),
+			"Vals":  template.JS(valsJSON),
+		})
+	})
 	r.GET("/dashboard/:group", func(c *gin.Context) {
 		group := c.Param("group")
 		ps, _ := openParameters(group)
@@ -89,7 +105,8 @@ Options:`)
 			}
 		}
 		c.HTML(http.StatusOK, "dashboard.tmpl", gin.H{
-			"Dash": dash,
+			"Group": group,
+			"Dash":  dash,
 		})
 	})
 	r.GET("/explore/:group/:network/:location", func(c *gin.Context) {
@@ -104,13 +121,12 @@ Options:`)
 		indexNames := []template.JS{}
 		it := 0
 		for m, n := range ps.Priors[network].P[location] {
-			if ps.MacVariability[m] < 0.5 {
+			if ps.MacVariability[m] > 0.1 {
 				names = append(names, template.JS(string(m)))
 				jsonByte, _ := json.Marshal(n)
 				datas = append(datas, template.JS(string(jsonByte)))
 				indexNames = append(indexNames, template.JS(strconv.Itoa(it)))
 				it++
-				break
 			}
 		}
 		rsiRange, _ := json.Marshal(RssiRange)

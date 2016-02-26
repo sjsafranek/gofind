@@ -90,6 +90,13 @@ func crossValidation(group string, n string, ps *FullParameters) float64 {
 					if locationGuess == v2.Location {
 						ps.Results[n].CorrectLocations[locationGuess]++
 					}
+					if _, ok := ps.Results[n].Guess[v2.Location]; !ok {
+						ps.Results[n].Guess[v2.Location] = make(map[string]int)
+					}
+					if _, ok := ps.Results[n].Guess[v2.Location][locationGuess]; !ok {
+						ps.Results[n].Guess[v2.Location][locationGuess] = 0
+					}
+					ps.Results[n].Guess[v2.Location][locationGuess]++
 				}
 			}
 			it++
