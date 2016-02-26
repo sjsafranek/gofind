@@ -54,6 +54,11 @@ func cleanFingerprint(res *Fingerprint) {
 	res.Group = strings.ToLower(res.Group)
 	res.Location = strings.ToLower(res.Location)
 	res.Username = strings.ToLower(res.Username)
+	for r := range res.WifiFingerprint {
+		if res.WifiFingerprint[r].Rssi >= 0 {
+			res.WifiFingerprint[r].Rssi = int(res.WifiFingerprint[r].Rssi/2) - 100
+		}
+	}
 }
 
 func putFingerprintIntoDatabase(res Fingerprint) error {

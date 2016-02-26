@@ -4,7 +4,7 @@ import "math"
 
 func calculatePosterior(res Fingerprint) map[string]float64 {
 	var ps FullParameters = *NewFullParameters()
-	ps, _ = openParameters("find")
+	ps, _ = openParameters(res.Group)
 	macs := []string{}
 	W := make(map[string]int)
 	for v2 := range res.WifiFingerprint {
