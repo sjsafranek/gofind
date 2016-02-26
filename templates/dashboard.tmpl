@@ -270,6 +270,32 @@
   });
 
 
+
+  $('#recalculateAll').click(function() {
+      swal({
+        title: "Recalculate priors and analyze accuracy",
+        text: "This may take a minute",
+        type: "info",
+        showCancelButton: true,
+        closeOnConfirm: false,
+        showLoaderOnConfirm: true,
+      },
+      function(){
+              $.get("/calculate",
+                  {
+                      "group":"{{ .Group }}",
+                  },
+                  function(data) {
+                      console.log(data);
+                      if (data['success']) {
+                          swal("Recalculating priors successful!");
+                          location.reload();
+                      }
+                  }
+              );
+      });
+  });
+
   $('.editloc').click(function() {
       var place = $(this).attr('id');
       swal({

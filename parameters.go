@@ -120,6 +120,9 @@ func openParameters(group string) (FullParameters, error) {
 	err = db.View(func(tx *bolt.Tx) error {
 		// Assume bucket exists and has keys
 		b := tx.Bucket([]byte("resources"))
+		if b == nil {
+			return fmt.Errorf("Resources dont exist")
+		}
 		v := b.Get([]byte("fullParameters"))
 		ps = loadParameters(v)
 		return nil

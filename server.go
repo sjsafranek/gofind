@@ -143,6 +143,7 @@ Options:`)
 	r.GET("/whereami", whereAmI)
 	r.GET("/editname", editName)
 	r.GET("/delete", deleteName)
+	r.GET("/calculate", calculate)
 	if RuntimeArgs.ServerCRT != "" && RuntimeArgs.ServerKey != "" {
 		Info.Println("--------------------------")
 		fmt.Println("find (version " + VersionNum + ") is up and running on https://" + RuntimeArgs.ExternalIP)

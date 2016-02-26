@@ -12,6 +12,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func calculate(c *gin.Context) {
+	group := c.DefaultQuery("group", "noneasdf")
+	if group != "noneasdf" {
+		optimizePriors(group)
+		c.JSON(http.StatusOK, gin.H{"message": "Parameters optimized.", "success": true})
+	} else {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "Error parsing request"})
+	}
+}
+
 func editName(c *gin.Context) {
 	group := c.DefaultQuery("group", "noneasdf")
 	location := c.DefaultQuery("location", "none")
