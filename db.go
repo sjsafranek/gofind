@@ -8,6 +8,50 @@ import (
 	"github.com/boltdb/bolt"
 )
 
+func getUsers(group string) []string {
+	defer timeTrack(time.Now(), "getUsers")
+	uniqueUsers := []string{}
+
+	db, err := bolt.Open(path.Join(RuntimeArgs.SourcePath, group+".db"), 0600, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	db.View(func(tx *bolt.Tx) error {
+		// Assume bucket exists and has keys
+		b := tx.Bucket([]byte("fingerprints"))
+		if b == nil {
+			return nil
+		}
+		c := b.Cursor()
+		for k, v := c.First(); k != nil; k, v = c.Next() {
+			v2 := loadFingerprint(v)
+			if !stringInSlice(v2.Username, uniqueUsers) {
+				uniqueUsers = append(uniqueUsers, v2.Username)
+			}
+		}
+		return nil
+	})
+
+	db.View(func(tx *bolt.Tx) error {
+		// Assume bucket exists and has keys
+		b := tx.Bucket([]byte("fingerprints-track"))
+		if b == nil {
+			return nil
+		}
+		c := b.Cursor()
+		for k, v := c.First(); k != nil; k, v = c.Next() {
+			v2 := loadFingerprint(v)
+			if !stringInSlice(v2.Username, uniqueUsers) {
+				uniqueUsers = append(uniqueUsers, v2.Username)
+			}
+		}
+		return nil
+	})
+	return uniqueUsers
+}
+
 func getUniqueMacs(group string) []string {
 	defer timeTrack(time.Now(), "getUniqueMacs")
 	uniqueMacs := []string{}
