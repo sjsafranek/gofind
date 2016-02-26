@@ -91,7 +91,7 @@ func handleFingerprint(c *gin.Context) {
 		if jsonFingerprint.Location != "" {
 			putFingerprintIntoDatabase(jsonFingerprint)
 			Debug.Println("Inserted fingerprint for " + jsonFingerprint.Username + " (" + jsonFingerprint.Group + ") at " + jsonFingerprint.Location)
-			calculatePosterior(jsonFingerprint)
+			fmt.Println(calculatePosterior(jsonFingerprint, *NewFullParameters()))
 			c.JSON(http.StatusOK, gin.H{"status": "you are logged in"})
 		} else {
 			c.JSON(http.StatusOK, gin.H{"status": "your current location is XYZ"})

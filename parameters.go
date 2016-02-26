@@ -18,9 +18,10 @@ type PriorParameters struct {
 	Special  map[string]float64
 }
 
-type Results struct {
-	Accuracy          map[string]int // accuracy measurement for a given location
-	NumberOfLocations map[string]int // number of locations
+type ResultsParameters struct {
+	Accuracy         map[string]int // accuracy measurement for a given location
+	TotalLocations   map[string]int // number of locations
+	CorrectLocations map[string]int // number of times guessed correctly
 }
 
 // Array of parameters used for the network
@@ -32,7 +33,9 @@ type FullParameters struct {
 	MacCountByLoc  map[string]map[string]int  // number of each mac, by location
 	UniqueLocs     []string
 	UniqueMacs     []string
-	Priors         map[string]PriorParameters // generate priors for each network
+	Priors         map[string]PriorParameters   // generate priors for each network
+	Results        map[string]ResultsParameters // generate priors for each network
+	Loaded         bool                         // flag to determine if parameters have been loaded
 }
 
 func NewFullParameters() *FullParameters {
@@ -45,6 +48,8 @@ func NewFullParameters() *FullParameters {
 		UniqueLocs:     []string{},
 		Priors:         make(map[string]PriorParameters),
 		MacVariability: make(map[string]float32),
+		Results:        make(map[string]ResultsParameters),
+		Loaded:         false,
 	}
 }
 
@@ -55,6 +60,14 @@ func NewPriorParameters() *PriorParameters {
 		MacFreq:  make(map[string]map[string]float32),
 		NMacFreq: make(map[string]map[string]float32),
 		Special:  make(map[string]float64),
+	}
+}
+
+func NewResultsParameters() *ResultsParameters {
+	return &ResultsParameters{
+		Accuracy:         make(map[string]int),
+		TotalLocations:   make(map[string]int),
+		CorrectLocations: make(map[string]int),
 	}
 }
 
@@ -120,6 +133,7 @@ func getParameters(group string, ps *FullParameters) {
 	ps.UniqueLocs = []string{}
 	ps.MacCount = make(map[string]int)
 	ps.MacCountByLoc = make(map[string]map[string]int)
+	ps.Loaded = true
 	db, err := bolt.Open(path.Join(RuntimeArgs.SourcePath, group+".db"), 0600, nil)
 	if err != nil {
 		log.Fatal(err)

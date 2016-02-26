@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"log"
+	"math"
 	"path"
 	"time"
 
@@ -25,6 +27,82 @@ func init() {
 	for i := 0; i < len(RssiRange); i++ {
 		RssiRange[i] = float32(MinRssi + i)
 	}
+}
+
+func optimizePriors(group string) {
+	var ps FullParameters = *NewFullParameters()
+	getParameters(group, &ps)
+	calculatePriors(group, &ps)
+	// fmt.Println(string(dumpParameters(ps)))
+	// ps, _ = openParameters("findtest")
+	var results ResultsParameters = *NewResultsParameters()
+	for n := range ps.Priors {
+		ps.Results[n] = results
+	}
+	fmt.Println(ps.Results)
+	ps.Priors["0"].Special["MixIn"] = 1.0
+	fmt.Println(crossValidation(group, "0", &ps))
+	fmt.Println(ps.Results)
+
+	mixins := []float64{0.1, 0.25, 0.5, 0.75, 0.9}
+	for n := range ps.Priors {
+		bestResult := float64(0)
+		bestMixin := float64(0)
+		for _, mixin := range mixins {
+			ps.Priors[n].Special["MixIn"] = mixin
+			Debug.Println("Starting cross validation...")
+			avgAccuracy := crossValidation(group, "0", &ps)
+			if avgAccuracy > bestResult {
+				bestResult = avgAccuracy
+				bestMixin = mixin
+			}
+		}
+		fmt.Println(bestMixin, bestResult)
+	}
+	// saveParameters(group, ps)
+}
+
+func crossValidation(group string, n string, ps *FullParameters) float64 {
+	db, err := bolt.Open(path.Join(RuntimeArgs.SourcePath, group+".db"), 0600, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	for loc := range ps.NetworkLocs[n] {
+		ps.Results[n].TotalLocations[loc] = 0
+		ps.Results[n].CorrectLocations[loc] = 0
+		ps.Results[n].Accuracy[loc] = 0
+	}
+
+	db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte("fingerprints"))
+		c := b.Cursor()
+		it := float64(0)
+		for k, v := c.First(); k != nil; k, v = c.Next() {
+			if math.Mod(it, 3) == 0 {
+				v2 := loadFingerprint(v)
+				if _, ok := ps.NetworkLocs[n][v2.Location]; ok {
+					locationGuess, _ := calculatePosterior(v2, *ps)
+					ps.Results[n].TotalLocations[locationGuess]++
+					if locationGuess == v2.Location {
+						ps.Results[n].CorrectLocations[locationGuess]++
+					}
+				}
+			}
+			it++
+		}
+		return nil
+	})
+
+	average := float64(0)
+	for loc := range ps.NetworkLocs[n] {
+		ps.Results[n].Accuracy[loc] = int(100.0 * ps.Results[n].CorrectLocations[loc] / ps.Results[n].TotalLocations[loc])
+		average += float64(ps.Results[n].Accuracy[loc])
+	}
+	average = average / float64(len(ps.NetworkLocs[n]))
+
+	return average
 }
 
 func calculatePriors(group string, ps *FullParameters) {
@@ -61,7 +139,12 @@ func calculatePriors(group string, ps *FullParameters) {
 		// Assume bucket exists and has keys
 		b := tx.Bucket([]byte("fingerprints"))
 		c := b.Cursor()
+		it := float64(-1)
 		for k, v := c.First(); k != nil; k, v = c.Next() {
+			it++
+			if math.Mod(it, 3) == 0 { // cross-validation
+				continue
+			}
 			v2 := loadFingerprint(v)
 			macs := []string{}
 			for _, router := range v2.WifiFingerprint {
@@ -149,7 +232,7 @@ func calculatePriors(group string, ps *FullParameters) {
 
 		// Determine MacVariability
 		for mac := range macAverages {
-			if len(macAverages[mac]) <= 1 {
+			if len(macAverages[mac]) <= 2 {
 				ps.MacVariability[mac] = float32(1)
 			} else {
 				maxVal := float32(-10000)

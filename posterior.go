@@ -2,9 +2,11 @@ package main
 
 import "math"
 
-func calculatePosterior(res Fingerprint) map[string]float64 {
-	var ps FullParameters = *NewFullParameters()
-	ps, _ = openParameters(res.Group)
+func calculatePosterior(res Fingerprint, ps FullParameters) (string, map[string]float64) {
+	if !ps.Loaded {
+		ps, _ = openParameters(res.Group)
+		Debug.Println("Loading parameters from database...")
+	}
 	macs := []string{}
 	W := make(map[string]int)
 	for v2 := range res.WifiFingerprint {
@@ -12,7 +14,7 @@ func calculatePosterior(res Fingerprint) map[string]float64 {
 		W[res.WifiFingerprint[v2].Mac] = res.WifiFingerprint[v2].Rssi
 	}
 	n, inNetworkAlready := hasNetwork(ps.NetworkMacs, macs)
-	Debug.Println(n, inNetworkAlready)
+	// Debug.Println(n, inNetworkAlready)
 	if !inNetworkAlready {
 		Warning.Println("Not in network")
 	}
@@ -31,17 +33,15 @@ func calculatePosterior(res Fingerprint) map[string]float64 {
 				weight = float64(ps.Priors[n].MacFreq[loc][mac])
 			} else {
 				weight = float64(ps.Priors[n].Special["MacFreqMin"])
-				Debug.Println("Using min..")
 			}
 			if _, ok := ps.Priors[n].NMacFreq[loc][mac]; ok {
 				nweight = float64(ps.Priors[n].NMacFreq[loc][mac])
 			} else {
 				nweight = float64(ps.Priors[n].Special["NMacFreqMin"])
-				Debug.Println("Using nmin..")
 			}
 			PBayes1[loc] += math.Log(weight*PA) - math.Log(weight*PA+PnA*nweight)
 
-			if ps.MacVariability[mac] > 0 {
+			if ps.MacVariability[mac] > 0 && W[mac] > MinRssi {
 				ind := int(W[mac] - MinRssi)
 				PBA := float64(ps.Priors[n].P[loc][mac][ind])
 				PBnA := float64(ps.Priors[n].NP[loc][mac][ind])
@@ -59,10 +59,18 @@ func calculatePosterior(res Fingerprint) map[string]float64 {
 	for key := range PBayes1 {
 		PBayesMix[key] = ps.Priors[n].Special["MixIn"]*PBayes1[key] + (1-ps.Priors[n].Special["MixIn"])*PBayes2[key]
 	}
-	Debug.Println(PBayes1)
-	Debug.Println(PBayes2)
-	Debug.Println(PBayesMix)
-	return PBayesMix
+	// Debug.Println(PBayes1)
+	// Debug.Println(PBayes2)
+	// Debug.Println(PBayesMix)
+	bestLocation := ""
+	maxVal := float64(-100)
+	for key := range PBayesMix {
+		if PBayesMix[key] > maxVal {
+			maxVal = PBayesMix[key]
+			bestLocation = key
+		}
+	}
+	return bestLocation, PBayesMix
 }
 
 func normalizeBayes(bayes map[string]float64) map[string]float64 {
