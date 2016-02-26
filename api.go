@@ -25,7 +25,7 @@ func whereAmI(c *gin.Context) {
 			log.Fatal(err)
 		}
 		defer db.Close()
-
+		locations := []string{}
 		db.View(func(tx *bolt.Tx) error {
 			// Assume bucket exists and has keys
 			b := tx.Bucket([]byte("fingerprints-track"))
@@ -33,11 +33,17 @@ func whereAmI(c *gin.Context) {
 			for k, v := c.Last(); k != nil; k, v = c.Prev() {
 				v2 := loadFingerprint(v)
 				fmt.Println(string(k), v2.Username)
+				if v2.Username == jsonData.User {
+					locations = append(locations, v2.Location)
+				}
+				if len(locations) > 2 {
+					break
+				}
 			}
 			return nil
 		})
-
-		c.JSON(http.StatusOK, gin.H{"group": jsonData.Group, "user": jsonData.User})
+		// jsonLocations, _ := json.Marshal(locations)
+		c.JSON(http.StatusOK, gin.H{"group": jsonData.Group, "user": jsonData.User, "locations": locations})
 	} else {
 		c.JSON(http.StatusOK, gin.H{"message": "uhoh"})
 	}
