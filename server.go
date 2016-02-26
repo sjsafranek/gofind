@@ -60,24 +60,29 @@ Options:`)
 	ps, _ = openParameters("findtest2")
 	optimizePriors("findtest2")
 
+	fmt.Println(ps.NetworkLocs["0"])
+
 	r := gin.Default()
 	r.LoadHTMLGlob("templates/*")
-	r.GET("/", func(c *gin.Context) {
+	r.GET("/explore/:group/:network/:location", func(c *gin.Context) {
 		defer timeTrack(time.Now(), "Loading JSON")
+		group := c.Param("group")
+		network := c.Param("network")
+		location := c.Param("location")
+		ps, _ := openParameters(group)
+		// TODO: check if network and location exists in the ps, if not return 404
 		datas := []template.JS{}
 		names := []template.JS{}
 		indexNames := []template.JS{}
 		it := 0
-		for m, n := range ps.Priors["0"].P["bathroom"] {
-			for i, val := range n {
-				if val > float32(0) && i > 20 {
-					names = append(names, template.JS(string(m)))
-					jsonByte, _ := json.Marshal(n)
-					datas = append(datas, template.JS(string(jsonByte)))
-					indexNames = append(indexNames, template.JS(strconv.Itoa(it)))
-					it++
-					break
-				}
+		for m, n := range ps.Priors[network].P[location] {
+			if ps.MacVariability[m] < 0.5 {
+				names = append(names, template.JS(string(m)))
+				jsonByte, _ := json.Marshal(n)
+				datas = append(datas, template.JS(string(jsonByte)))
+				indexNames = append(indexNames, template.JS(strconv.Itoa(it)))
+				it++
+				break
 			}
 		}
 		rsiRange, _ := json.Marshal(RssiRange)
