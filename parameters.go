@@ -15,7 +15,7 @@ type PriorParameters struct {
 	NP       map[string]map[string][]float32 // standard nP
 	MacFreq  map[string]map[string]float32   // Frequency of a mac in a certain location
 	NMacFreq map[string]map[string]float32   // Frequency of a mac, in everywhere BUT a certain location
-	Special  map[string]float32
+	Special  map[string]float64
 }
 
 // Array of parameters used for the network
@@ -49,7 +49,7 @@ func NewPriorParameters() *PriorParameters {
 		NP:       make(map[string]map[string][]float32),
 		MacFreq:  make(map[string]map[string]float32),
 		NMacFreq: make(map[string]map[string]float32),
-		Special:  make(map[string]float32),
+		Special:  make(map[string]float64),
 	}
 }
 

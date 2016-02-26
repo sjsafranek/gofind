@@ -38,8 +38,8 @@ func calculatePriors(group string, ps *FullParameters) {
 	// Initialization
 	ps.MacVariability = make(map[string]float32)
 	for n := range ps.Priors {
-		ps.Priors[n].Special["MacFreqMin"] = float32(100)
-		ps.Priors[n].Special["NMacFreqMin"] = float32(100)
+		ps.Priors[n].Special["MacFreqMin"] = float64(100)
+		ps.Priors[n].Special["NMacFreqMin"] = float64(100)
 		for loc := range ps.NetworkLocs[n] {
 			ps.Priors[n].P[loc] = make(map[string][]float32)
 			ps.Priors[n].NP[loc] = make(map[string][]float32)
@@ -177,8 +177,8 @@ func calculatePriors(group string, ps *FullParameters) {
 			}
 			for mac := range ps.MacCountByLoc[loc] {
 				ps.Priors[n].MacFreq[loc][mac] = float32(ps.MacCountByLoc[loc][mac]) / float32(maxCount)
-				if ps.Priors[n].MacFreq[loc][mac] < ps.Priors[n].Special["MacFreqMin"] {
-					ps.Priors[n].Special["MacFreqMin"] = ps.Priors[n].MacFreq[loc][mac]
+				if float64(ps.Priors[n].MacFreq[loc][mac]) < ps.Priors[n].Special["MacFreqMin"] {
+					ps.Priors[n].Special["MacFreqMin"] = float64(ps.Priors[n].MacFreq[loc][mac])
 				}
 			}
 		}
@@ -200,12 +200,16 @@ func calculatePriors(group string, ps *FullParameters) {
 			if sum > 0 {
 				for mac := range ps.Priors[n].MacFreq[loc1] {
 					ps.Priors[n].NMacFreq[loc1][mac] = ps.Priors[n].NMacFreq[loc1][mac] / sum
-					if ps.Priors[n].NMacFreq[loc1][mac] < ps.Priors[n].Special["NMacFreqMin"] {
-						ps.Priors[n].Special["NMacFreqMin"] = ps.Priors[n].NMacFreq[loc1][mac]
+					if float64(ps.Priors[n].NMacFreq[loc1][mac]) < ps.Priors[n].Special["NMacFreqMin"] {
+						ps.Priors[n].Special["NMacFreqMin"] = float64(ps.Priors[n].NMacFreq[loc1][mac])
 					}
 				}
 			}
 		}
+	}
+
+	for n := range ps.Priors {
+		ps.Priors[n].Special["MixIn"] = 0.5
 	}
 
 }

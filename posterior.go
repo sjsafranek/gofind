@@ -2,7 +2,7 @@ package main
 
 import "math"
 
-func calculatePosterior(res Fingerprint) {
+func calculatePosterior(res Fingerprint) map[string]float64 {
 	var ps FullParameters = *NewFullParameters()
 	ps, _ = openParameters("find")
 	macs := []string{}
@@ -53,7 +53,33 @@ func calculatePosterior(res Fingerprint) {
 			}
 		}
 	}
-
+	PBayes1 = normalizeBayes(PBayes1)
+	PBayes2 = normalizeBayes(PBayes2)
+	PBayesMix := make(map[string]float64)
+	for key := range PBayes1 {
+		PBayesMix[key] = ps.Priors[n].Special["MixIn"]*PBayes1[key] + (1-ps.Priors[n].Special["MixIn"])*PBayes2[key]
+	}
 	Debug.Println(PBayes1)
 	Debug.Println(PBayes2)
+	Debug.Println(PBayesMix)
+	return PBayesMix
+}
+
+func normalizeBayes(bayes map[string]float64) map[string]float64 {
+	vals := make([]float64, len(bayes))
+	i := 0
+	for _, val := range bayes {
+		vals[i] = val
+		i++
+	}
+	mean := average64(vals)
+	sd := standardDeviation64(vals)
+	for key := range bayes {
+		if sd < 1e-5 {
+			bayes[key] = 0
+		} else {
+			bayes[key] = (bayes[key] - mean) / sd
+		}
+	}
+	return bayes
 }
