@@ -93,6 +93,56 @@ func editName(c *gin.Context) {
 	}
 }
 
+func deleteName(c *gin.Context) {
+	group := c.DefaultQuery("group", "noneasdf")
+	location := c.DefaultQuery("location", "none")
+	if group != "noneasdf" {
+		numChanges := 0
+
+		db, err := bolt.Open(path.Join(RuntimeArgs.SourcePath, group+".db"), 0600, nil)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		db.Update(func(tx *bolt.Tx) error {
+			b := tx.Bucket([]byte("fingerprints"))
+			if b != nil {
+				c := b.Cursor()
+				for k, v := c.Last(); k != nil; k, v = c.Prev() {
+					v2 := loadFingerprint(v)
+					if v2.Location == location {
+						b.Delete(k)
+						numChanges++
+					}
+				}
+			}
+			return nil
+		})
+
+		db.Update(func(tx *bolt.Tx) error {
+			b := tx.Bucket([]byte("fingerprints"))
+			if b != nil {
+				c := b.Cursor()
+				for k, v := c.Last(); k != nil; k, v = c.Prev() {
+					v2 := loadFingerprint(v)
+					if v2.Location == location {
+						b.Delete(k)
+						numChanges++
+					}
+				}
+			}
+			return nil
+		})
+
+		db.Close()
+		regenerateEverything(group)
+
+		c.JSON(http.StatusOK, gin.H{"message": "Changed name of " + strconv.Itoa(numChanges) + " things", "success": true})
+	} else {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "Error parsing request"})
+	}
+}
+
 type WhereAmIJson struct {
 	Group string `json:"group"`
 	User  string `json:"user"`

@@ -122,8 +122,10 @@ func crossValidation(group string, n string, ps *FullParameters) float64 {
 
 	average := float64(0)
 	for loc := range ps.NetworkLocs[n] {
-		ps.Results[n].Accuracy[loc] = int(100.0 * ps.Results[n].CorrectLocations[loc] / ps.Results[n].TotalLocations[loc])
-		average += float64(ps.Results[n].Accuracy[loc])
+		if ps.Results[n].TotalLocations[loc] > 0 {
+			ps.Results[n].Accuracy[loc] = int(100.0 * ps.Results[n].CorrectLocations[loc] / ps.Results[n].TotalLocations[loc])
+			average += float64(ps.Results[n].Accuracy[loc])
+		}
 	}
 	average = average / float64(len(ps.NetworkLocs[n]))
 

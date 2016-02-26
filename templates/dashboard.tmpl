@@ -227,6 +227,49 @@
 
 
   <script>
+  $(document).ready(function(){
+      $('.deleteloc').css( 'cursor', 'pointer' );
+      $('.editloc').css( 'cursor', 'pointer' );
+});
+
+  $('.deleteloc').click(function() {
+      var placeToDelete = $(this).attr('id');
+      swal({
+        title: "Delete location",
+        text: "Are you sure you want to delete " + placeToDelete,
+         type: "warning",
+         showCancelButton: true,
+         confirmButtonColor: "#DD6B55",
+         confirmButtonText: "Yes, delete it!",
+         cancelButtonText: "No, cancel pls!",
+         closeOnConfirm: false,
+         closeOnCancel: false
+      },
+      function(isConfirm){
+          if (isConfirm) {
+              $.get("/delete",
+                  {
+                      "group":"{{ .Group }}",
+                      "location":placeToDelete
+                  },
+                  function(data) {
+                      console.log(data);
+                      if (data['success']) {
+                          swal("Deleted!", data['message'], "success");
+                          location.reload()
+                      } else {
+                          swal("Sorry", data['message'], "error");
+                      }
+                  }
+              );
+          } else {
+             swal("Cancelled", "Your data is safe :)", "error");
+          }
+      });
+
+  });
+
+
   $('.editloc').click(function() {
       var place = $(this).attr('id');
       swal({
