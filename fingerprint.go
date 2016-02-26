@@ -61,7 +61,7 @@ func cleanFingerprint(res *Fingerprint) {
 	}
 }
 
-func putFingerprintIntoDatabase(res Fingerprint) error {
+func putFingerprintIntoDatabase(res Fingerprint, database string) error {
 	db, err := bolt.Open(path.Join(RuntimeArgs.SourcePath, res.Group+".db"), 0600, nil)
 	if err != nil {
 		log.Fatal(err)
@@ -69,7 +69,7 @@ func putFingerprintIntoDatabase(res Fingerprint) error {
 	defer db.Close()
 
 	err = db.Update(func(tx *bolt.Tx) error {
-		bucket, err := tx.CreateBucketIfNotExists([]byte("fingerprints"))
+		bucket, err := tx.CreateBucketIfNotExists([]byte(database))
 		if err != nil {
 			return fmt.Errorf("create bucket: %s", err)
 		}
@@ -89,12 +89,25 @@ func handleFingerprint(c *gin.Context) {
 	if c.BindJSON(&jsonFingerprint) == nil {
 		cleanFingerprint(&jsonFingerprint)
 		if jsonFingerprint.Location != "" {
-			putFingerprintIntoDatabase(jsonFingerprint)
+			putFingerprintIntoDatabase(jsonFingerprint, "fingerprints")
 			Debug.Println("Inserted fingerprint for " + jsonFingerprint.Username + " (" + jsonFingerprint.Group + ") at " + jsonFingerprint.Location)
-			fmt.Println(calculatePosterior(jsonFingerprint, *NewFullParameters()))
-			c.JSON(http.StatusOK, gin.H{"status": "you are logged in"})
+			c.JSON(http.StatusOK, gin.H{"message": "Inserted fingerprint"})
 		} else {
-			c.JSON(http.StatusOK, gin.H{"status": "your current location is XYZ"})
+			trackFingerprint(c)
 		}
+	}
+}
+
+func trackFingerprint(c *gin.Context) {
+	var jsonFingerprint Fingerprint
+	if c.BindJSON(&jsonFingerprint) == nil {
+		cleanFingerprint(&jsonFingerprint)
+		locationGuess, _ := calculatePosterior(jsonFingerprint, *NewFullParameters())
+		jsonFingerprint.Location = locationGuess
+		putFingerprintIntoDatabase(jsonFingerprint, "fingerprints-track")
+		Debug.Println("Tracking fingerprint for " + jsonFingerprint.Username + " (" + jsonFingerprint.Group + ") at " + jsonFingerprint.Location + " (guess)")
+		c.JSON(http.StatusOK, gin.H{"message": "Inserted fingerprint", "locationGuess": locationGuess})
+	} else {
+		c.JSON(http.StatusOK, gin.H{"message": "UH OH"})
 	}
 }
