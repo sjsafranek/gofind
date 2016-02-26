@@ -18,6 +18,11 @@ type PriorParameters struct {
 	Special  map[string]float64
 }
 
+type Results struct {
+	Accuracy          map[string]int // accuracy measurement for a given location
+	NumberOfLocations map[string]int // number of locations
+}
+
 // Array of parameters used for the network
 type FullParameters struct {
 	NetworkMacs    map[string]map[string]bool // map of networks and then the associated macs in each
