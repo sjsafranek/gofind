@@ -64,6 +64,22 @@ func optimizePriors(group string) {
 	saveParameters(group, ps)
 }
 
+func regenerateEverything(group string) {
+	defer timeTrack(time.Now(), "regenerateParameters")
+	var ps FullParameters = *NewFullParameters()
+	ps, _ = openParameters(group)
+	getParameters(group, &ps)
+	calculatePriors(group, &ps)
+	var results ResultsParameters = *NewResultsParameters()
+	for n := range ps.Priors {
+		ps.Results[n] = results
+	}
+	for n := range ps.Priors {
+		crossValidation(group, n, &ps)
+	}
+	saveParameters(group, ps)
+}
+
 func crossValidation(group string, n string, ps *FullParameters) float64 {
 	db, err := bolt.Open(path.Join(RuntimeArgs.SourcePath, group+".db"), 0600, nil)
 	if err != nil {

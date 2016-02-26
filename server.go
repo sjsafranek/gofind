@@ -141,6 +141,7 @@ Options:`)
 	r.POST("/learn", handleFingerprint)
 	r.POST("/track", trackFingerprint)
 	r.GET("/whereami", whereAmI)
+	r.GET("/editname", editName)
 	if RuntimeArgs.ServerCRT != "" && RuntimeArgs.ServerKey != "" {
 		Info.Println("--------------------------")
 		fmt.Println("find (version " + VersionNum + ") is up and running on https://" + RuntimeArgs.ExternalIP)
