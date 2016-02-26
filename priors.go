@@ -39,10 +39,10 @@ func optimizePriors(group string) {
 	for n := range ps.Priors {
 		ps.Results[n] = results
 	}
-	fmt.Println(ps.Results)
-	ps.Priors["0"].Special["MixIn"] = 1.0
-	fmt.Println(crossValidation(group, "0", &ps))
-	fmt.Println(ps.Results)
+	// fmt.Println(ps.Results)
+	// ps.Priors["0"].Special["MixIn"] = 1.0
+	// fmt.Println(crossValidation(group, "0", &ps))
+	// fmt.Println(ps.Results)
 
 	mixins := []float64{0.1, 0.25, 0.5, 0.75, 0.9}
 	for n := range ps.Priors {
@@ -51,7 +51,7 @@ func optimizePriors(group string) {
 		for _, mixin := range mixins {
 			ps.Priors[n].Special["MixIn"] = mixin
 			Debug.Println("Starting cross validation...")
-			avgAccuracy := crossValidation(group, "0", &ps)
+			avgAccuracy := crossValidation(group, n, &ps)
 			if avgAccuracy > bestResult {
 				bestResult = avgAccuracy
 				bestMixin = mixin
@@ -59,7 +59,8 @@ func optimizePriors(group string) {
 		}
 		fmt.Println(bestMixin, bestResult)
 	}
-	// saveParameters(group, ps)
+	fmt.Println(ps.Results)
+	saveParameters(group, ps)
 }
 
 func crossValidation(group string, n string, ps *FullParameters) float64 {
