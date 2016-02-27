@@ -113,7 +113,7 @@ func trackFingerprint(c *gin.Context) {
 		positions = append(positions, positions1)
 		positions = append(positions, positions2)
 		Debug.Println("Tracking fingerprint for " + jsonFingerprint.Username + " (" + jsonFingerprint.Group + ") at " + jsonFingerprint.Location + " (guess)")
-		c.JSON(http.StatusOK, gin.H{"message": "Inserted fingerprint", "locationGuess": locationGuess, "positions": positions})
+		c.JSON(http.StatusOK, gin.H{"message": "Inserted fingerprint", "locationGuess": locationGuess, "position": positions})
 	} else {
 		c.JSON(http.StatusOK, gin.H{"message": "UH OH"})
 	}
