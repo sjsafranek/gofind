@@ -109,6 +109,9 @@ func saveParameters(group string, res FullParameters) error {
 
 func openParameters(group string) (FullParameters, error) {
 	defer timeTrack(time.Now(), "openParameters")
+	if _, ok := psCache[group]; ok {
+		return psCache[group], nil
+	}
 
 	var ps FullParameters = *NewFullParameters()
 	db, err := bolt.Open(path.Join(RuntimeArgs.SourcePath, group+".db"), 0600, nil)
@@ -127,6 +130,7 @@ func openParameters(group string) (FullParameters, error) {
 		ps = loadParameters(v)
 		return nil
 	})
+	psCache[group] = ps
 	return ps, err
 }
 

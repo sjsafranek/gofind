@@ -5,7 +5,6 @@ import "math"
 func calculatePosterior(res Fingerprint, ps FullParameters) (string, map[string]float64) {
 	if !ps.Loaded {
 		ps, _ = openParameters(res.Group)
-		Debug.Println("Loading parameters from database...")
 	}
 	macs := []string{}
 	W := make(map[string]int)

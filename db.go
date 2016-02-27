@@ -10,6 +10,10 @@ import (
 
 func getUsers(group string) []string {
 	defer timeTrack(time.Now(), "getUsers")
+	if _, ok := usersCache[group]; ok {
+		return usersCache[group]
+	}
+
 	uniqueUsers := []string{}
 
 	db, err := bolt.Open(path.Join(RuntimeArgs.SourcePath, group+".db"), 0600, nil)
@@ -49,6 +53,7 @@ func getUsers(group string) []string {
 		}
 		return nil
 	})
+	usersCache[group] = uniqueUsers
 	return uniqueUsers
 }
 
