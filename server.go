@@ -135,7 +135,7 @@ Options:`)
 		indexNames := []template.JS{}
 		it := 0
 		for m, n := range ps.Priors[network].P[location] {
-			if ps.MacVariability[m] > 0.1 {
+			if float64(ps.MacVariability[m]) > ps.Priors[network].Special["VarabilityCutoff"] {
 				names = append(names, template.JS(string(m)))
 				jsonByte, _ := json.Marshal(n)
 				datas = append(datas, template.JS(string(jsonByte)))
