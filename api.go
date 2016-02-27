@@ -20,7 +20,7 @@ type UserPositionJson struct {
 	Pcts     string `json:"pcts"`
 }
 
-func getPositionBreakdown(group string, user string) {
+func getPositionBreakdown(group string, user string) UserPositionJson {
 	db, err := bolt.Open(path.Join(RuntimeArgs.SourcePath, group+".db"), 0600, nil)
 	if err != nil {
 		log.Fatal(err)
@@ -59,7 +59,7 @@ func getPositionBreakdown(group string, user string) {
 		userJson.Labels = string(foo)
 		userJson.Location = location
 	}
-	fmt.Println(userJson)
+	return userJson
 }
 
 func calculate(c *gin.Context) {

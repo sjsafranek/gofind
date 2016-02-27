@@ -111,6 +111,12 @@ Options:`)
 			"Dash":  dash,
 		})
 	})
+	r.GET("/location/:group/:user", func(c *gin.Context) {
+		group := c.Param("group")
+		user := c.Param("user")
+		userJson := getPositionBreakdown(group, user)
+		c.JSON(http.StatusOK, userJson)
+	})
 	r.GET("/explore/:group/:network/:location", func(c *gin.Context) {
 		defer timeTrack(time.Now(), "Loading JSON")
 		group := c.Param("group")
