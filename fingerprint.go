@@ -105,8 +105,15 @@ func trackFingerprint(c *gin.Context) {
 		locationGuess, _ := calculatePosterior(jsonFingerprint, *NewFullParameters())
 		jsonFingerprint.Location = locationGuess
 		putFingerprintIntoDatabase(jsonFingerprint, "fingerprints-track")
+		positions := [][]string{}
+		positions1 := []string{}
+		positions2 := []string{}
+		positions1 = append(positions1, locationGuess)
+		positions2 = append(positions2, " ")
+		positions = append(positions, positions1)
+		positions = append(positions, positions2)
 		Debug.Println("Tracking fingerprint for " + jsonFingerprint.Username + " (" + jsonFingerprint.Group + ") at " + jsonFingerprint.Location + " (guess)")
-		c.JSON(http.StatusOK, gin.H{"message": "Inserted fingerprint", "locationGuess": locationGuess})
+		c.JSON(http.StatusOK, gin.H{"message": "Inserted fingerprint", "locationGuess": locationGuess, "positions": positions})
 	} else {
 		c.JSON(http.StatusOK, gin.H{"message": "UH OH"})
 	}
