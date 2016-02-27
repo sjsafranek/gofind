@@ -46,21 +46,31 @@ func optimizePriors(group string) {
 	// fmt.Println(ps.Results)
 
 	mixins := []float64{0.1, 0.25, 0.5, 0.75, 0.9}
+	cutoffs := []float64{0.05, 0.1, 0.15, 0.2, 0.5}
+
 	for n := range ps.Priors {
 		bestResult := float64(0)
 		bestMixin := float64(0)
+		bestCutoff := float64(0)
 		for _, mixin := range mixins {
-			ps.Priors[n].Special["MixIn"] = mixin
-			Debug.Println("Starting cross validation...")
-			avgAccuracy := crossValidation(group, n, &ps)
-			if avgAccuracy > bestResult {
-				bestResult = avgAccuracy
-				bestMixin = mixin
+			for _, cutoff := range cutoffs {
+				ps.Priors[n].Special["MixIn"] = mixin
+				ps.Priors[n].Special["VarabilityCutoff"] = cutoff
+				avgAccuracy := crossValidation(group, n, &ps)
+				if avgAccuracy > bestResult {
+					bestResult = avgAccuracy
+					bestMixin = mixin
+					bestCutoff = cutoff
+				}
 			}
 		}
+		ps.Priors[n].Special["MixIn"] = bestMixin
+		ps.Priors[n].Special["VarabilityCutoff"] = bestCutoff
 		fmt.Println(bestMixin, bestResult)
+		Debug.Println("Final cross validation...")
+		crossValidation(group, n, &ps)
 	}
-	fmt.Println(ps.Results)
+
 	saveParameters(group, ps)
 }
 
@@ -320,6 +330,7 @@ func calculatePriors(group string, ps *FullParameters) {
 
 	for n := range ps.Priors {
 		ps.Priors[n].Special["MixIn"] = 0.5
+		ps.Priors[n].Special["VarabilityCutoff"] = 0
 	}
 
 }

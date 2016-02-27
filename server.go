@@ -50,17 +50,17 @@ Options:`)
 	}
 	RuntimeArgs.SourcePath = path.Join(cwd, "data")
 
-	var ps FullParameters = *NewFullParameters()
-	getParameters("findtest2", &ps)
-	calculatePriors("findtest2", &ps)
-	// fmt.Println(string(dumpParameters(ps)))
-	saveParameters("findtest2", ps)
-	fmt.Println(ps.MacVariability)
-	fmt.Println(ps.NetworkLocs)
-	optimizePriors("findtest2")
-	ps, _ = openParameters("findtest2")
-
-	getPositionBreakdown("findtest2", "zack")
+	// var ps FullParameters = *NewFullParameters()
+	// getParameters("findtest2", &ps)
+	// calculatePriors("findtest2", &ps)
+	// // fmt.Println(string(dumpParameters(ps)))
+	// saveParameters("findtest2", ps)
+	// fmt.Println(ps.MacVariability)
+	// fmt.Println(ps.NetworkLocs)
+	// optimizePriors("findtest2")
+	// ps, _ = openParameters("findtest2")
+	//
+	// getPositionBreakdown("findtest2", "zack")
 
 	r := gin.Default()
 	r.LoadHTMLGlob("templates/*")
@@ -92,6 +92,7 @@ Options:`)
 			LocationAccuracy map[string]int
 			LocationCount    map[string]int
 			Mixin            map[string]float64
+			VarabilityCutoff map[string]float64
 		}
 		var dash DashboardData
 		dash.Networks = []string{}
@@ -99,8 +100,10 @@ Options:`)
 		dash.LocationAccuracy = make(map[string]int)
 		dash.LocationCount = make(map[string]int)
 		dash.Mixin = make(map[string]float64)
+		dash.VarabilityCutoff = make(map[string]float64)
 		for n := range ps.NetworkLocs {
 			dash.Mixin[n] = ps.Priors[n].Special["MixIn"]
+			dash.VarabilityCutoff[n] = ps.Priors[n].Special["VarabilityCutoff"]
 			dash.Networks = append(dash.Networks, n)
 			dash.Locations[n] = []string{}
 			for loc := range ps.NetworkLocs[n] {

@@ -41,7 +41,7 @@ func calculatePosterior(res Fingerprint, ps FullParameters) (string, map[string]
 			}
 			PBayes1[loc] += math.Log(weight*PA) - math.Log(weight*PA+PnA*nweight)
 
-			if ps.MacVariability[mac] > 0 && W[mac] > MinRssi {
+			if float64(ps.MacVariability[mac]) >= ps.Priors[n].Special["VarabilityCutoff"] && W[mac] > MinRssi {
 				ind := int(W[mac] - MinRssi)
 				PBA := float64(ps.Priors[n].P[loc][mac][ind])
 				PBnA := float64(ps.Priors[n].NP[loc][mac][ind])
