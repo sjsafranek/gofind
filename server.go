@@ -72,6 +72,7 @@ Options:`)
 		ps, _ := openParameters(group)
 		vals := []int{}
 		names := []string{}
+		fmt.Println(ps.Results[network].Guess[location])
 		for guessloc, val := range ps.Results[network].Guess[location] {
 			names = append(names, guessloc)
 			vals = append(vals, val)
@@ -85,6 +86,7 @@ Options:`)
 	})
 	r.GET("/dashboard/:group", func(c *gin.Context) {
 		group := c.Param("group")
+		optimizePriors(group)
 		ps, _ := openParameters(group)
 		type DashboardData struct {
 			Networks         []string

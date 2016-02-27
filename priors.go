@@ -101,6 +101,7 @@ func crossValidation(group string, n string, ps *FullParameters) float64 {
 		ps.Results[n].TotalLocations[loc] = 0
 		ps.Results[n].CorrectLocations[loc] = 0
 		ps.Results[n].Accuracy[loc] = 0
+		ps.Results[n].Guess[loc] = make(map[string]int)
 	}
 
 	db.View(func(tx *bolt.Tx) error {
@@ -179,32 +180,31 @@ func calculatePriors(group string, ps *FullParameters) {
 		it := float64(-1)
 		for k, v := c.First(); k != nil; k, v = c.Next() {
 			it++
-			if math.Mod(it, 2) == 0 { // cross-validation
-				continue
-			}
-			v2 := loadFingerprint(v)
-			macs := []string{}
-			for _, router := range v2.WifiFingerprint {
-				macs = append(macs, router.Mac)
-			}
-
-			networkName, inNetwork := hasNetwork(ps.NetworkMacs, macs)
-			if inNetwork {
+			if math.Mod(it, 2) != 0 { // cross-validation
+				v2 := loadFingerprint(v)
+				macs := []string{}
 				for _, router := range v2.WifiFingerprint {
-					if router.Rssi > MinRssi {
-						ps.Priors[networkName].P[v2.Location][router.Mac][router.Rssi-MinRssi] += PdfType[0]
-						for i, val := range PdfType {
-							if i > 0 {
-								ps.Priors[networkName].P[v2.Location][router.Mac][router.Rssi-MinRssi-i] += val
-								ps.Priors[networkName].P[v2.Location][router.Mac][router.Rssi-MinRssi+i] += val
+					macs = append(macs, router.Mac)
+				}
+
+				networkName, inNetwork := hasNetwork(ps.NetworkMacs, macs)
+				if inNetwork {
+					for _, router := range v2.WifiFingerprint {
+						if router.Rssi > MinRssi {
+							ps.Priors[networkName].P[v2.Location][router.Mac][router.Rssi-MinRssi] += PdfType[0]
+							for i, val := range PdfType {
+								if i > 0 {
+									ps.Priors[networkName].P[v2.Location][router.Mac][router.Rssi-MinRssi-i] += val
+									ps.Priors[networkName].P[v2.Location][router.Mac][router.Rssi-MinRssi+i] += val
+								}
 							}
+						} else {
+							Warning.Println(router.Rssi)
 						}
-					} else {
-						Warning.Println(router.Rssi)
 					}
 				}
-			}
 
+			}
 		}
 		return nil
 	})
