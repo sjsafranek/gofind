@@ -91,13 +91,16 @@ Options:`)
 			Locations        map[string][]string
 			LocationAccuracy map[string]int
 			LocationCount    map[string]int
+			Mixin            map[string]float64
 		}
 		var dash DashboardData
 		dash.Networks = []string{}
 		dash.Locations = make(map[string][]string)
 		dash.LocationAccuracy = make(map[string]int)
 		dash.LocationCount = make(map[string]int)
+		dash.Mixin = make(map[string]float64)
 		for n := range ps.NetworkLocs {
+			dash.Mixin[n] = ps.Priors[n].Special["MixIn"]
 			dash.Networks = append(dash.Networks, n)
 			dash.Locations[n] = []string{}
 			for loc := range ps.NetworkLocs[n] {

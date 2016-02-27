@@ -196,7 +196,9 @@
           <div class="panel panel-primary" id="volume-fees-panel">
             <div class="panel-heading">
               <h3 class="panel-title">
-                         Network{{ $element }} <a id="{{ $element }}" class="renameNetwork"><span class="fa fa-pencil-square-o"></span></a>
+                         Network{{ $element }}
+                         <a id="{{ $element }}" class="renameNetwork"><span class="fa fa-pencil-square-o"></span></a>
+                         (Mixin = {{ index $.Dash.Mixin $element }})
                        </h3>
             </div>
             <div class="panel-body">

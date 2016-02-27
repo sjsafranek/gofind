@@ -98,13 +98,13 @@ func crossValidation(group string, n string, ps *FullParameters) float64 {
 		c := b.Cursor()
 		it := float64(0)
 		for k, v := c.First(); k != nil; k, v = c.Next() {
-			if math.Mod(it, 3) == 0 {
+			if math.Mod(it, 2) == 0 {
 				v2 := loadFingerprint(v)
 				if _, ok := ps.NetworkLocs[n][v2.Location]; ok {
 					locationGuess, _ := calculatePosterior(v2, *ps)
-					ps.Results[n].TotalLocations[locationGuess]++
+					ps.Results[n].TotalLocations[v2.Location]++
 					if locationGuess == v2.Location {
-						ps.Results[n].CorrectLocations[locationGuess]++
+						ps.Results[n].CorrectLocations[v2.Location]++
 					}
 					if _, ok := ps.Results[n].Guess[v2.Location]; !ok {
 						ps.Results[n].Guess[v2.Location] = make(map[string]int)
@@ -169,7 +169,7 @@ func calculatePriors(group string, ps *FullParameters) {
 		it := float64(-1)
 		for k, v := c.First(); k != nil; k, v = c.Next() {
 			it++
-			if math.Mod(it, 3) == 0 { // cross-validation
+			if math.Mod(it, 2) == 0 { // cross-validation
 				continue
 			}
 			v2 := loadFingerprint(v)
