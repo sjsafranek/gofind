@@ -161,6 +161,39 @@
 
     <div class="row clearfix" id="content-row">
       <div class="col-xs-12 column">
+        <h3>Users</h3>
+      </div>
+    </div>
+
+
+    <div class="well" id="volume-stats-well">
+      <div class="row clearfix" id="location-listing">
+
+
+        {{ range $index, $user := .Users }}
+
+        <div class="col-md-6 column" id="volume-fees-chart">
+          <div class="panel panel-primary" id="volume-fees-panel">
+            <div class="panel-heading">
+              <h3 class="panel-title">
+                         {{ $index }}
+                       </h3>
+            </div>
+            <div class="panel-body">
+              <p id="lastSeen{{$index}}">Last seen: {{ $user.Time }} at {{ $user.Location }}</p>
+              <p  id="bayes{{$index}}">{{ $user.Bayes }}</p>
+            </div>
+          </div>
+        </div>
+
+        {{ end }}
+
+
+      </div>
+    </div>
+
+    <div class="row clearfix" id="content-row">
+      <div class="col-xs-12 column">
         <h3>Database statistics</h3>
       </div>
     </div>
@@ -204,6 +237,10 @@
 
       </div>
     </div>
+
+
+
+
   </div>
 
 
@@ -212,6 +249,22 @@
   $(document).ready(function(){
       $('.deleteloc').css( 'cursor', 'pointer' );
       $('.editloc').css( 'cursor', 'pointer' );
+
+      window.setInterval(function() {
+        $.getJSON("/userlocs", {
+           group: "{{ .Group }}"
+          },
+          function(data) {
+            if (data['success']==true) {
+              for (var key in data['users']) {
+                console.log(key)
+                console.log(data['users'][key])
+                $('#lastSeen'+key).text("Last seen: "+data['users'][key]['time']+" at "+data['users'][key]['location']);
+                $('#bayes'+key).text("Bayes: "+JSON.stringify(data['users'][key]['bayes']));
+              }
+            }
+        });
+      }, 1500);
 });
 
   $('.deleteloc').click(function() {

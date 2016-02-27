@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -14,10 +13,9 @@ import (
 )
 
 type UserPositionJson struct {
-	Time     string `json:"time"`
-	Location string `json:"location"`
-	Labels   string `json:"labels"`
-	Pcts     string `json:"pcts"`
+	Time     string             `json:"time"`
+	Location string             `json:"location"`
+	Bayes    map[string]float64 `json:"bayes"`
 }
 
 func getPositionBreakdown(group string, user string) UserPositionJson {
@@ -47,17 +45,8 @@ func getPositionBreakdown(group string, user string) UserPositionJson {
 	db.Close()
 	if err == nil {
 		location, bayes := calculatePosterior(fullJson, *NewFullParameters())
-		labels := []string{}
-		nums := []float64{}
-		for k, v := range bayes {
-			labels = append(labels, k)
-			nums = append(nums, v)
-		}
-		foo, _ := json.Marshal(nums)
-		userJson.Pcts = string(foo)
-		foo, _ = json.Marshal(labels)
-		userJson.Labels = string(foo)
 		userJson.Location = location
+		userJson.Bayes = bayes
 	}
 	return userJson
 }
@@ -67,6 +56,20 @@ func calculate(c *gin.Context) {
 	if group != "noneasdf" {
 		optimizePriors(group)
 		c.JSON(http.StatusOK, gin.H{"message": "Parameters optimized.", "success": true})
+	} else {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "Error parsing request"})
+	}
+}
+
+func userLocations(c *gin.Context) {
+	group := c.DefaultQuery("group", "noneasdf")
+	if group != "noneasdf" {
+		users := getUsers(group)
+		people := make(map[string]UserPositionJson)
+		for _, user := range users {
+			people[user] = getPositionBreakdown(group, user)
+		}
+		c.JSON(http.StatusOK, gin.H{"message": "Correctly found", "success": true, "users": people})
 	} else {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "Error parsing request"})
 	}

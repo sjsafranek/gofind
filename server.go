@@ -88,6 +88,11 @@ Options:`)
 		group := c.Param("group")
 		optimizePriors(group)
 		ps, _ := openParameters(group)
+		users := getUsers(group)
+		people := make(map[string]UserPositionJson)
+		for _, user := range users {
+			people[user] = getPositionBreakdown(group, user)
+		}
 		type DashboardData struct {
 			Networks         []string
 			Locations        map[string][]string
@@ -95,6 +100,7 @@ Options:`)
 			LocationCount    map[string]int
 			Mixin            map[string]float64
 			VarabilityCutoff map[string]float64
+			Users            map[string]UserPositionJson
 		}
 		var dash DashboardData
 		dash.Networks = []string{}
@@ -117,6 +123,7 @@ Options:`)
 		c.HTML(http.StatusOK, "dashboard.tmpl", gin.H{
 			"Group": group,
 			"Dash":  dash,
+			"Users": people,
 		})
 	})
 	r.GET("/location/:group/:user", func(c *gin.Context) {
@@ -160,6 +167,7 @@ Options:`)
 	r.GET("/editname", editName)
 	r.GET("/delete", deleteName)
 	r.GET("/calculate", calculate)
+	r.GET("/userlocs", userLocations)
 	if RuntimeArgs.ServerCRT != "" && RuntimeArgs.ServerKey != "" {
 		Info.Println("--------------------------")
 		fmt.Println("find (version " + VersionNum + ") is up and running on https://" + RuntimeArgs.ExternalIP)
