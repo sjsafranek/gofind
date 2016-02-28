@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"sort"
 	"strconv"
 	"time"
 
@@ -141,15 +142,22 @@ Options:`)
 		datas := []template.JS{}
 		names := []template.JS{}
 		indexNames := []template.JS{}
-		it := 0
-		for m, n := range ps.Priors[network].P[location] {
+		// Sort locations
+		macs := []string{}
+		for m := range ps.Priors[network].P[location] {
 			if float64(ps.MacVariability[m]) > ps.Priors[network].Special["VarabilityCutoff"] {
-				names = append(names, template.JS(string(m)))
-				jsonByte, _ := json.Marshal(n)
-				datas = append(datas, template.JS(string(jsonByte)))
-				indexNames = append(indexNames, template.JS(strconv.Itoa(it)))
-				it++
+				macs = append(macs, m)
 			}
+		}
+		sort.Strings(macs)
+		it := 0
+		for _, m := range macs {
+			n := ps.Priors[network].P[location][m]
+			names = append(names, template.JS(string(m)))
+			jsonByte, _ := json.Marshal(n)
+			datas = append(datas, template.JS(string(jsonByte)))
+			indexNames = append(indexNames, template.JS(strconv.Itoa(it)))
+			it++
 		}
 		rsiRange, _ := json.Marshal(RssiRange)
 		c.HTML(http.StatusOK, "plot.tmpl", gin.H{
