@@ -243,6 +243,8 @@
 
 
   <script>
+
+
     $(document).ready(function() {
       $('.deleteloc').css('cursor', 'pointer');
       $('.editloc').css('cursor', 'pointer');
@@ -254,10 +256,38 @@
           function(data) {
             if (data['success'] == true) {
               for (var key in data['users']) {
+                userkey = key;
                 console.log(key)
                 console.log(data['users'][key])
                 $('#lastSeen' + key).text("Last seen: " + data['users'][key]['time'] + " at " + data['users'][key]['location']);
-                $('#bayes' + key).text("Bayes: " + JSON.stringify(data['users'][key]['bayes']));
+                // $('#bayes' + key).text("Bayes: " + JSON.stringify(data['users'][key]['bayes']));
+                var tuples = [];
+
+                for (var key2 in data['users'][key]['bayes']) tuples.push([key2, data['users'][key]['bayes'][key2]]);
+
+                tuples.sort(function(a, b) {
+                    a = a[1];
+                    b = b[1];
+
+                    return a < b ? -1 : (a > b ? 1 : 0);
+                });
+                total = 0;
+                for (var i = tuples.length-1; i >=0; i--) {
+                    var value = Math.exp(tuples[i][1]);
+                    total += value;
+                }
+                vals = []
+                for (var i = tuples.length-1; i >=0; i--) {
+                    var key = tuples[i][0];
+                    var value = Math.round(Math.exp(tuples[i][1])/total*100);
+                    if (value > 10) {
+                      vals.push(value + "% " + key)
+                    }
+                }
+                console.log(vals.join())
+               $('#bayes' + userkey).text("Bayes: " + vals.join())
+
+
               }
             }
           });
