@@ -16,6 +16,7 @@ var MinRssi int
 var RssiPartitions int
 var Absentee float32
 var RssiRange []float32
+var FoldCrossValidation float64
 
 func init() {
 	PdfType = []float32{.1995, .1760, .1210, .0648, .027, 0.005}
@@ -27,6 +28,7 @@ func init() {
 	for i := 0; i < len(RssiRange); i++ {
 		RssiRange[i] = float32(MinRssi + i)
 	}
+	FoldCrossValidation = 2
 }
 
 func optimizePriors(group string) {
@@ -110,7 +112,7 @@ func crossValidation(group string, n string, ps *FullParameters) float64 {
 		c := b.Cursor()
 		it := float64(0)
 		for k, v := c.First(); k != nil; k, v = c.Next() {
-			if math.Mod(it, 2) == 0 {
+			if math.Mod(it, FoldCrossValidation) == 0 {
 				v2 := loadFingerprint(v)
 				if _, ok := ps.NetworkLocs[n][v2.Location]; ok {
 					locationGuess, _ := calculatePosterior(v2, *ps)
@@ -181,7 +183,7 @@ func calculatePriors(group string, ps *FullParameters) {
 		it := float64(-1)
 		for k, v := c.First(); k != nil; k, v = c.Next() {
 			it++
-			if math.Mod(it, 2) != 0 { // cross-validation
+			if math.Mod(it, FoldCrossValidation) != 0 { // cross-validation
 				v2 := loadFingerprint(v)
 				macs := []string{}
 				for _, router := range v2.WifiFingerprint {
