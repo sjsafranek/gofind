@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
 )
 
@@ -68,6 +69,28 @@ Options:`)
 	r := gin.Default()
 	r.LoadHTMLGlob("templates/*")
 	r.Static("static/", "static/")
+	store := sessions.NewCookieStore([]byte("secret"))
+	r.Use(sessions.Sessions("mysession", store))
+
+	r.GET("/incr", func(c *gin.Context) {
+		loginGroup := sessions.Default(c)
+		var count int
+		v := loginGroup.Get("count")
+		if v == nil {
+			count = 0
+		} else {
+			count = v.(int)
+			count += 1
+		}
+		loginGroup.Set("count", count)
+		loginGroup.Save()
+		c.JSON(200, gin.H{"count": count})
+	})
+	r.NoRoute(func(c *gin.Context) {
+		c.HTML(http.StatusOK, "login.tmpl", gin.H{
+			"Message": "You need to login to continue.",
+		})
+	})
 	r.GET("/pie/:group/:network/:location", func(c *gin.Context) {
 		group := c.Param("group")
 		network := c.Param("network")
@@ -86,6 +109,50 @@ Options:`)
 			"Names": template.JS(namesJSON),
 			"Vals":  template.JS(valsJSON),
 		})
+	})
+	r.GET("/login", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "login.tmpl", gin.H{})
+	})
+	r.GET("/", func(c *gin.Context) {
+		var group string
+		loginGroup := sessions.Default(c)
+		groupCookie := loginGroup.Get("group")
+		if groupCookie == nil {
+			c.Redirect(302, "/login")
+		} else {
+			group = groupCookie.(string)
+			c.Redirect(302, "/dashboard/"+group)
+		}
+	})
+	r.POST("/login", func(c *gin.Context) {
+		loginGroup := sessions.Default(c)
+		group := c.PostForm("group")
+		if _, err := os.Stat(path.Join("data", group+".db")); err == nil {
+			loginGroup.Set("group", group)
+			loginGroup.Save()
+			c.Redirect(302, "/dashboard/"+group)
+		} else {
+			c.HTML(http.StatusOK, "login.tmpl", gin.H{
+				"ErrorMessage": "Incorrect login.",
+			})
+
+		}
+	})
+	r.GET("/logout", func(c *gin.Context) {
+		var group string
+		loginGroup := sessions.Default(c)
+		groupCookie := loginGroup.Get("group")
+		if groupCookie == nil {
+			c.Redirect(302, "/login")
+		} else {
+			group = groupCookie.(string)
+			fmt.Println(group)
+			loginGroup.Clear()
+			loginGroup.Save()
+			c.HTML(http.StatusOK, "login.tmpl", gin.H{
+				"Message": "You are now logged out.",
+			})
+		}
 	})
 	r.GET("/dashboard/:group", func(c *gin.Context) {
 		group := c.Param("group")
