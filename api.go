@@ -24,8 +24,8 @@ func getPositionBreakdown(group string, user string) UserPositionJSON {
 	if err != nil {
 		log.Fatal(err)
 	}
-	var userJson UserPositionJSON
-	var fullJson Fingerprint
+	var userJSON UserPositionJSON
+	var fullJSON Fingerprint
 	err = db.View(func(tx *bolt.Tx) error {
 		// Assume bucket exists and has keys
 		b := tx.Bucket([]byte("fingerprints-track"))
@@ -36,8 +36,8 @@ func getPositionBreakdown(group string, user string) UserPositionJSON {
 		for k, v := c.Last(); k != nil; k, v = c.Prev() {
 			v2 := loadFingerprint(v)
 			if v2.Username == user {
-				userJson.Time = string(k)
-				fullJson = v2
+				userJSON.Time = string(k)
+				fullJSON = v2
 				return nil
 			}
 		}
@@ -45,11 +45,11 @@ func getPositionBreakdown(group string, user string) UserPositionJSON {
 	})
 	db.Close()
 	if err == nil {
-		location, bayes := calculatePosterior(fullJson, *NewFullParameters())
-		userJson.Location = location
-		userJson.Bayes = bayes
+		location, bayes := calculatePosterior(fullJSON, *NewFullParameters())
+		userJSON.Location = location
+		userJSON.Bayes = bayes
 	}
-	return userJson
+	return userJSON
 }
 
 func calculate(c *gin.Context) {
