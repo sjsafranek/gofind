@@ -1,4 +1,4 @@
-package gofind
+package main
 
 import (
 	"crypto/md5"
