@@ -1,4 +1,4 @@
-package main
+package gofind
 
 import (
 	"encoding/json"
@@ -79,11 +79,13 @@ func NewResultsParameters() *ResultsParameters {
 }
 
 func dumpParameters(res FullParameters) []byte {
+	defer timeTrack(time.Now(), "dumpParameters")
 	jsonByte, _ := json.Marshal(res)
 	return jsonByte
 }
 
 func loadParameters(jsonByte []byte) FullParameters {
+	defer timeTrack(time.Now(), "loadParameters")
 	var res2 FullParameters
 	json.Unmarshal(jsonByte, &res2)
 	return res2
