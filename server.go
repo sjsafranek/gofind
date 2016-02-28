@@ -86,7 +86,6 @@ Options:`)
 	})
 	r.GET("/dashboard/:group", func(c *gin.Context) {
 		group := c.Param("group")
-		optimizePriors(group)
 		ps, _ := openParameters(group)
 		users := getUsers(group)
 		people := make(map[string]UserPositionJson)

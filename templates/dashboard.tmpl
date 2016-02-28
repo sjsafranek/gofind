@@ -36,17 +36,15 @@
     dl {
       width: 100%;
       overflow: hidden;
+      margin: 0;
+      padding: 0;
     }
 
-    dt {
+    dt, dd {
       float: left;
       width: 50%;
-      /* adjust the width; make sure the total of both is 100% */
-    }
-
-    dd {
-      float: left;
-      width: 50%;
+      margin: 0;
+      padding: 0;
       /* adjust the width; make sure the total of both is 100% */
     }
 
@@ -156,6 +154,18 @@
       </div>
     </div> -->
 
+    <div class="well" id="volume-parameters-well">
+         <div class="row clearfix" id="volume-fees-row">
+             <div class="col-md-12 column" id="volume-fees-chart">
+                 <div class="panel panel-primary" id="volume-fees-panel">
+                     <div class="panel-body">
+                     <button type="submit" class="btn btn-info btn-block" id="recalculateAll">Calculate All and Find Parameters</button>
+                     </div>
+                 </div>
+             </div>
+         </div>
+     </div>
+
     <div class="row clearfix" id="content-row">
       <div class="col-xs-12 column">
         <h3>Users</h3>
@@ -178,7 +188,7 @@
             </div>
             <div class="panel-body">
               <p id="lastSeen{{$index}}">Last seen: {{ $user.Time }} at {{ $user.Location }}</p>
-              <p id="bayes{{$index}}">{{ $user.Bayes }}</p>
+              <p id="bayes{{$index}}"></p>
             </div>
           </div>
         </div>
