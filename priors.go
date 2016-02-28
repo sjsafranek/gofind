@@ -72,6 +72,7 @@ func optimizePriors(group string) {
 	}
 
 	saveParameters(group, ps)
+	psCache[group] = ps
 }
 
 func regenerateEverything(group string) {
