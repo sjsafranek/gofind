@@ -24,6 +24,8 @@ var RuntimeArgs struct {
 	ServerKey  string
 	SourcePath string
 }
+
+// VersionNum keeps track of the version
 var VersionNum string
 
 func main() {
@@ -89,7 +91,7 @@ Options:`)
 		group := c.Param("group")
 		ps, _ := openParameters(group)
 		users := getUsers(group)
-		people := make(map[string]UserPositionJson)
+		people := make(map[string]UserPositionJSON)
 		for _, user := range users {
 			people[user] = getPositionBreakdown(group, user)
 		}
@@ -100,7 +102,7 @@ Options:`)
 			LocationCount    map[string]int
 			Mixin            map[string]float64
 			VarabilityCutoff map[string]float64
-			Users            map[string]UserPositionJson
+			Users            map[string]UserPositionJSON
 		}
 		var dash DashboardData
 		dash.Networks = []string{}
@@ -129,8 +131,8 @@ Options:`)
 	r.GET("/location/:group/:user", func(c *gin.Context) {
 		group := c.Param("group")
 		user := c.Param("user")
-		userJson := getPositionBreakdown(group, user)
-		c.JSON(http.StatusOK, userJson)
+		userJSON := getPositionBreakdown(group, user)
+		c.JSON(http.StatusOK, userJSON)
 	})
 	r.GET("/explore/:group/:network/:location", func(c *gin.Context) {
 		defer timeTrack(time.Now(), "Loading JSON")

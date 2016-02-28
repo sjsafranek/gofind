@@ -10,6 +10,7 @@ import (
 	"github.com/boltdb/bolt"
 )
 
+// PriorParameters contains the network-specific bayesian priors and Mac frequency, as well as special variables
 type PriorParameters struct {
 	P        map[string]map[string][]float32 // standard P
 	NP       map[string]map[string][]float32 // standard nP
@@ -18,6 +19,7 @@ type PriorParameters struct {
 	Special  map[string]float64
 }
 
+// ResultsParameters contains the information about the accuracy from crossValidation
 type ResultsParameters struct {
 	Accuracy         map[string]int            // accuracy measurement for a given location
 	TotalLocations   map[string]int            // number of locations
@@ -25,7 +27,7 @@ type ResultsParameters struct {
 	Guess            map[string]map[string]int // correct -> guess -> times
 }
 
-// Array of parameters used for the network
+// FullParameters is the full parameter set for a given group
 type FullParameters struct {
 	NetworkMacs    map[string]map[string]bool // map of networks and then the associated macs in each
 	NetworkLocs    map[string]map[string]bool // map of the networks, and then the associated locations in each
@@ -39,6 +41,7 @@ type FullParameters struct {
 	Loaded         bool                         // flag to determine if parameters have been loaded
 }
 
+// NewFullParameters generates a blank FullParameters
 func NewFullParameters() *FullParameters {
 	return &FullParameters{
 		NetworkMacs:    make(map[string]map[string]bool),
@@ -54,6 +57,7 @@ func NewFullParameters() *FullParameters {
 	}
 }
 
+// NewPriorParameters generates a blank PriorParameters
 func NewPriorParameters() *PriorParameters {
 	return &PriorParameters{
 		P:        make(map[string]map[string][]float32),
@@ -64,6 +68,7 @@ func NewPriorParameters() *PriorParameters {
 	}
 }
 
+// NewResultsParameters generates a blank ResultsParameters
 func NewResultsParameters() *ResultsParameters {
 	return &ResultsParameters{
 		Accuracy:         make(map[string]int),
@@ -113,7 +118,7 @@ func openParameters(group string) (FullParameters, error) {
 		return psCache[group], nil
 	}
 
-	var ps FullParameters = *NewFullParameters()
+	var ps = *NewFullParameters()
 	db, err := bolt.Open(path.Join(RuntimeArgs.SourcePath, group+".db"), 0600, nil)
 	if err != nil {
 		Error.Println(err)

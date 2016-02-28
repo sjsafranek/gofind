@@ -12,18 +12,19 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type UserPositionJson struct {
+// UserPositionJSON stores the a users time, location and bayes after calculatePosterior()
+type UserPositionJSON struct {
 	Time     string             `json:"time"`
 	Location string             `json:"location"`
 	Bayes    map[string]float64 `json:"bayes"`
 }
 
-func getPositionBreakdown(group string, user string) UserPositionJson {
+func getPositionBreakdown(group string, user string) UserPositionJSON {
 	db, err := bolt.Open(path.Join(RuntimeArgs.SourcePath, group+".db"), 0600, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
-	var userJson UserPositionJson
+	var userJson UserPositionJSON
 	var fullJson Fingerprint
 	err = db.View(func(tx *bolt.Tx) error {
 		// Assume bucket exists and has keys
@@ -65,7 +66,7 @@ func userLocations(c *gin.Context) {
 	group := c.DefaultQuery("group", "noneasdf")
 	if group != "noneasdf" {
 		users := getUsers(group)
-		people := make(map[string]UserPositionJson)
+		people := make(map[string]UserPositionJSON)
 		for _, user := range users {
 			people[user] = getPositionBreakdown(group, user)
 		}

@@ -15,13 +15,19 @@ import (
 )
 
 var (
-	Trace   *log.Logger
-	Info    *log.Logger
+	// Trace is a logging handler
+	Trace *log.Logger
+	// Info is a logging handler
+	Info *log.Logger
+	// Warning is a logging handler
 	Warning *log.Logger
-	Debug   *log.Logger
-	Error   *log.Logger
+	// Debug is a logging handler
+	Debug *log.Logger
+	// Error is a logging handler
+	Error *log.Logger
 )
 
+// Init function for generating the logging handlers
 func Init(
 	traceHandle io.Writer,
 	infoHandle io.Writer,

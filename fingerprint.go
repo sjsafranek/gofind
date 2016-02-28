@@ -14,6 +14,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Fingerprint is the prototypical information from the fingerprinting device
 type Fingerprint struct {
 	Group           string   `json:"group"`
 	Username        string   `json:"username"`
@@ -21,6 +22,7 @@ type Fingerprint struct {
 	WifiFingerprint []Router `json:"wifi-fingerprint"`
 }
 
+// Router is the router information for each invdividual mac address
 type Router struct {
 	Mac  string `json:"mac"`
 	Rssi int    `json:"rssi"`

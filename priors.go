@@ -10,12 +10,25 @@ import (
 	"github.com/boltdb/bolt"
 )
 
+// PdfType dictates the width of gaussian smoothing
 var PdfType []float32
+
+// MaxRssi is the maximum level of signal
 var MaxRssi int
+
+// MinRssi is the minimum level of signal
 var MinRssi int
+
+// RssiPartitions are the calculated number of partitions from MinRssi and MaxRssi
 var RssiPartitions int
+
+// Absentee is the base level of probability for any signal
 var Absentee float32
+
+// RssiRange is the calculated partitions in array form
 var RssiRange []float32
+
+// FoldCrossValidation is the amount of data left out during learning to be used in cross validation
 var FoldCrossValidation float64
 
 func init() {
@@ -33,12 +46,12 @@ func init() {
 
 func optimizePriors(group string) {
 	defer timeTrack(time.Now(), "optimizePriors")
-	var ps FullParameters = *NewFullParameters()
+	var ps = *NewFullParameters()
 	getParameters(group, &ps)
 	calculatePriors(group, &ps)
 	// fmt.Println(string(dumpParameters(ps)))
 	// ps, _ = openParameters("findtest")
-	var results ResultsParameters = *NewResultsParameters()
+	var results = *NewResultsParameters()
 	for n := range ps.Priors {
 		ps.Results[n] = results
 	}
@@ -79,11 +92,11 @@ func optimizePriors(group string) {
 
 func regenerateEverything(group string) {
 	defer timeTrack(time.Now(), "regenerateParameters")
-	var ps FullParameters = *NewFullParameters()
+	var ps = *NewFullParameters()
 	ps, _ = openParameters(group)
 	getParameters(group, &ps)
 	calculatePriors(group, &ps)
-	var results ResultsParameters = *NewResultsParameters()
+	var results = *NewResultsParameters()
 	for n := range ps.Priors {
 		ps.Results[n] = results
 	}
