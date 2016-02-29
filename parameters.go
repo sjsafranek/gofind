@@ -79,7 +79,6 @@ func NewResultsParameters() *ResultsParameters {
 
 func dumpParameters(res FullParameters) []byte {
 	defer timeTrack(time.Now(), "dumpParameters")
-	//jsonByte, _ := json.Marshal(res)
 	jsonByte, _ := res.MarshalJSON()
 	return compressByte(jsonByte)
 }
