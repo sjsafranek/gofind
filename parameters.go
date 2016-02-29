@@ -201,6 +201,40 @@ func getParameters(group string, ps *FullParameters) {
 		return nil
 	})
 	ps.NetworkMacs = mergeNetwork(ps.NetworkMacs)
+	NetworkRenamed := make(map[string][]string)
+	NetworkRenamed["convention"] = []string{}
+	NetworkRenamed["convention"] = append(NetworkRenamed["convention"], "cc:03:fa:8e:b6:62")
+	NetworkRenamed["convention"] = append(NetworkRenamed["convention"], "5c:a4:8a:d6:fe:bd")
+	newNames := []string{}
+	for k := range NetworkRenamed {
+		newNames = append(newNames, k)
+	}
+	fmt.Println(ps.NetworkMacs)
+	for n := range ps.NetworkMacs {
+		fmt.Println(n)
+		renamed := false
+		for mac := range ps.NetworkMacs[n] {
+			for renamedN := range NetworkRenamed {
+				if stringInSlice(mac, NetworkRenamed[renamedN]) && !stringInSlice(n, newNames) {
+					fmt.Println(n, renamedN)
+					ps.NetworkMacs[renamedN] = make(map[string]bool)
+					for k, v := range ps.NetworkMacs[n] {
+						ps.NetworkMacs[renamedN][k] = v
+					}
+					fmt.Println(ps.NetworkMacs)
+					delete(ps.NetworkMacs, n)
+					renamed = true
+				}
+				if renamed {
+					break
+				}
+			}
+			if renamed {
+				break
+			}
+		}
+	}
+	fmt.Println(ps.NetworkMacs)
 
 	// Get the locations for each graph (Has to have network built first)
 	db.View(func(tx *bolt.Tx) error {
