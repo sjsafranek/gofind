@@ -85,7 +85,6 @@ func dumpParameters(res FullParameters) []byte {
 }
 
 func loadParameters(jsonByte []byte) FullParameters {
-	defer timeTrack(time.Now(), "loadParameters")
 	var res2 FullParameters
 	json.Unmarshal(decompressByte(jsonByte), &res2)
 	return res2
