@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"compress/gzip"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -81,13 +83,34 @@ func NewResultsParameters() *ResultsParameters {
 func dumpParameters(res FullParameters) []byte {
 	defer timeTrack(time.Now(), "dumpParameters")
 	jsonByte, _ := json.Marshal(res)
-	return jsonByte
+	var b bytes.Buffer
+	gz := gzip.NewWriter(&b)
+	if _, err := gz.Write(jsonByte); err != nil {
+		panic(err)
+	}
+	if err := gz.Flush(); err != nil {
+		panic(err)
+	}
+	if err := gz.Close(); err != nil {
+		panic(err)
+	}
+	return b.Bytes()
+	// return jsonByte
 }
 
 func loadParameters(jsonByte []byte) FullParameters {
 	defer timeTrack(time.Now(), "loadParameters")
+	var b bytes.Buffer
+	gz, _ := gzip.NewReader(&b)
+	if _, err := gz.Read(jsonByte); err != nil {
+		panic(err)
+	}
+	if err := gz.Close(); err != nil {
+		panic(err)
+	}
+
 	var res2 FullParameters
-	json.Unmarshal(jsonByte, &res2)
+	json.Unmarshal(b.Bytes(), &res2)
 	return res2
 }
 
