@@ -34,7 +34,7 @@ var FoldCrossValidation float64
 func init() {
 	PdfType = []float32{.1995, .1760, .1210, .0648, .027, 0.005}
 	Absentee = 1e-6
-	MinRssi = -100
+	MinRssi = -110
 	MaxRssi = -10
 	RssiPartitions = MaxRssi - MinRssi + 1
 	RssiRange = make([]float32, RssiPartitions)
