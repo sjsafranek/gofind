@@ -41,14 +41,16 @@ var jsonExample = `{
 	}]
 }`
 
+// compression 9 us -> 900 us
 func dumpFingerprint(res Fingerprint) []byte {
 	dumped, _ := json.Marshal(res)
-	return dumped
+	return compressByte(dumped)
 }
 
+// compression 30 us -> 600 us
 func loadFingerprint(jsonByte []byte) Fingerprint {
 	res := Fingerprint{}
-	json.Unmarshal(jsonByte, &res)
+	json.Unmarshal(decompressByte(jsonByte), &res)
 	return res
 }
 

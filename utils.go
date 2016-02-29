@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"compress/flate"
 	"crypto/md5"
 	"encoding/hex"
 	"io"
@@ -139,4 +141,29 @@ func standardDeviation(vals []float32) float32 {
 	sd := math.Sqrt(sum)
 
 	return float32(sd)
+}
+
+func compressByte(src []byte) []byte {
+	compressedData := new(bytes.Buffer)
+	compress(src, compressedData, 9)
+	return compressedData.Bytes()
+}
+
+func decompressByte(src []byte) []byte {
+	compressedData := bytes.NewBuffer(src)
+	deCompressedData := new(bytes.Buffer)
+	decompress(compressedData, deCompressedData)
+	return deCompressedData.Bytes()
+}
+
+func compress(src []byte, dest io.Writer, level int) {
+	compressor, _ := flate.NewWriter(dest, level)
+	compressor.Write(src)
+	compressor.Close()
+}
+
+func decompress(src io.Reader, dest io.Writer) {
+	decompressor := flate.NewReader(src)
+	io.Copy(dest, decompressor)
+	decompressor.Close()
 }
