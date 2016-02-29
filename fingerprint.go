@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 
@@ -43,14 +42,14 @@ var jsonExample = `{
 
 // compression 9 us -> 900 us
 func dumpFingerprint(res Fingerprint) []byte {
-	dumped, _ := json.Marshal(res)
+	dumped, _ := res.MarshalJSON()
 	return compressByte(dumped)
 }
 
 // compression 30 us -> 600 us
 func loadFingerprint(jsonByte []byte) Fingerprint {
 	res := Fingerprint{}
-	json.Unmarshal(decompressByte(jsonByte), &res)
+	res.UnmarshalJSON(decompressByte(jsonByte))
 	return res
 }
 
