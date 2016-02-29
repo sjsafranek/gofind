@@ -9,7 +9,6 @@ import (
 )
 
 func getUsers(group string) []string {
-	defer timeTrack(time.Now(), "getUsers")
 	if _, ok := usersCache[group]; ok {
 		return usersCache[group]
 	}

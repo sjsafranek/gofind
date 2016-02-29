@@ -113,7 +113,6 @@ func saveParameters(group string, res FullParameters) error {
 }
 
 func openParameters(group string) (FullParameters, error) {
-	defer timeTrack(time.Now(), "openParameters")
 	if _, ok := psCache[group]; ok {
 		return psCache[group], nil
 	}
