@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"path"
@@ -80,13 +79,14 @@ func NewResultsParameters() *ResultsParameters {
 
 func dumpParameters(res FullParameters) []byte {
 	defer timeTrack(time.Now(), "dumpParameters")
-	jsonByte, _ := json.Marshal(res)
+	//jsonByte, _ := json.Marshal(res)
+	jsonByte, _ := res.MarshalJSON()
 	return compressByte(jsonByte)
 }
 
 func loadParameters(jsonByte []byte) FullParameters {
 	var res2 FullParameters
-	json.Unmarshal(decompressByte(jsonByte), &res2)
+	res2.UnmarshalJSON(decompressByte(jsonByte))
 	return res2
 }
 
