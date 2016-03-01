@@ -213,8 +213,8 @@
           <div class="panel panel-primary" id="volume-fees-panel">
             <div class="panel-heading">
               <h3 class="panel-title">
-                         Network{{ $element }}
-                         <a id="{{ $element }}" class="renameNetwork"><span class="fa fa-pencil-square-o"></span></a>
+                         {{ $element }}
+                         <a id="{{ $element }}" class="editnetworkloc"><span class="fa fa-pencil-square-o"></span></a>
                          (Mixin = {{ index $.Dash.Mixin $element }}, Cutoff = {{ index $.Dash.VarabilityCutoff $element }})
                        </h3>
             </div>
@@ -363,73 +363,143 @@
         });
     });
 
-    $('.editloc').click(function() {
-      var place = $(this).attr('id');
-      swal({
-          title: "Edit location",
-          text: "Are you sure you want to rename '" + place + "'",
-          type: "warning",
-          showCancelButton: true,
-          confirmButtonColor: "#DD6B55",
-          confirmButtonText: "Yes, rename it!",
-          cancelButtonText: "No, cancel pls!",
-          closeOnConfirm: false,
-          closeOnCancel: false
-        },
-        function(isConfirm) {
-          if (isConfirm) {
+        $('.editloc').click(function() {
+          var place = $(this).attr('id');
+          swal({
+              title: "Edit location",
+              text: "Are you sure you want to rename '" + place + "'",
+              type: "warning",
+              showCancelButton: true,
+              confirmButtonColor: "#DD6B55",
+              confirmButtonText: "Yes, rename it!",
+              cancelButtonText: "No, cancel pls!",
+              closeOnConfirm: false,
+              closeOnCancel: false
+            },
+            function(isConfirm) {
+              if (isConfirm) {
 
 
-            swal({
-                title: "Edit name",
-                text: "Enter the new name for '" + place + "':",
-                type: "input",
-                showCancelButton: true,
-                closeOnConfirm: false,
-                animation: "slide-from-top",
-                inputPlaceholder: "newlocation"
-              },
-              function(inputValue) {
-                if (inputValue === false) {
-                  swal.showInputError("You need to write something!");
-                  return false
-                }
-
-                if (inputValue === "") {
-                  swal.showInputError("You need to write something!");
-                  return false
-                }
-                console.log({
-                  "group": "{{ .Group }}",
-                  "location": place,
-                  "newname": inputValue
-                })
-                $.get("/editname", {
-                    "group": "{{ .Group }}",
-                    "location": place,
-                    "newname": inputValue
+                swal({
+                    title: "Edit name",
+                    text: "Enter the new name for '" + place + "':",
+                    type: "input",
+                    showCancelButton: true,
+                    closeOnConfirm: false,
+                    animation: "slide-from-top",
+                    inputPlaceholder: "newlocation"
                   },
-                  function(data) {
-                    console.log(data);
-                    if (data['success']) {
-                      swal("Edited!", data['message'], "success");
-                      location.reload()
-                    } else {
-                      swal("Something went wrong.", data['message'], "error");
+                  function(inputValue) {
+                    if (inputValue === false) {
+                      swal.showInputError("You need to write something!");
+                      return false
                     }
-                  }
-                );
+
+                    if (inputValue === "") {
+                      swal.showInputError("You need to write something!");
+                      return false
+                    }
+                    console.log({
+                      "group": "{{ .Group }}",
+                      "location": place,
+                      "newname": inputValue
+                    })
+                    $.get("/editname", {
+                        "group": "{{ .Group }}",
+                        "location": place,
+                        "newname": inputValue
+                      },
+                      function(data) {
+                        console.log(data);
+                        if (data['success']) {
+                          swal("Edited!", data['message'], "success");
+                          location.reload()
+                        } else {
+                          swal("Something went wrong.", data['message'], "error");
+                        }
+                      }
+                    );
 
 
-                swal("Nice!", "You wrote: " + inputValue, "success");
-              });
+                    swal("Nice!", "You wrote: " + inputValue, "success");
+                  });
 
-          } else {
-            swal("Cancelled", "Name is still the same! :)", "error");
-          }
+              } else {
+                swal("Cancelled", "Name is still the same! :)", "error");
+              }
+            });
+
         });
 
-    });
+
+
+            $('.editnetworkloc').click(function() {
+              var place = $(this).attr('id');
+              swal({
+                  title: "Edit location",
+                  text: "Are you sure you want to rename '" + place + "'",
+                  type: "warning",
+                  showCancelButton: true,
+                  confirmButtonColor: "#DD6B55",
+                  confirmButtonText: "Yes, rename it!",
+                  cancelButtonText: "No, cancel pls!",
+                  closeOnConfirm: false,
+                  closeOnCancel: false
+                },
+                function(isConfirm) {
+                  if (isConfirm) {
+
+
+                    swal({
+                        title: "Edit name",
+                        text: "Enter the new name for '" + place + "':",
+                        type: "input",
+                        showCancelButton: true,
+                        closeOnConfirm: false,
+                        animation: "slide-from-top",
+                        inputPlaceholder: "newlocation"
+                      },
+                      function(inputValue) {
+                        if (inputValue === false) {
+                          swal.showInputError("You need to write something!");
+                          return false
+                        }
+
+                        if (inputValue === "") {
+                          swal.showInputError("You need to write something!");
+                          return false
+                        }
+                        console.log({
+                          "group": "{{ .Group }}",
+                          "oldname": place,
+                          "newname": inputValue
+                        })
+                        $.get("/editnetworkname", {
+                            "group": "{{ .Group }}",
+                            "oldname": place,
+                            "newname": inputValue
+                          },
+                          function(data) {
+                            console.log(data);
+                            if (data['success']) {
+                              swal("Edited!", data['message'], "success");
+                              location.reload()
+                            } else {
+                              swal("Something went wrong.", data['message'], "error");
+                            }
+                          }
+                        );
+
+
+                        swal("Please wait while name is changed", "You wrote: " + inputValue, "success");
+                      });
+
+                  } else {
+                    swal("Cancelled", "Name is still the same! :)", "error");
+                  }
+                });
+
+            });
   </script>
 
 

@@ -76,6 +76,20 @@ func userLocations(c *gin.Context) {
 	}
 }
 
+func editNetworkName(c *gin.Context) {
+	group := c.DefaultQuery("group", "noneasdf")
+	oldname := c.DefaultQuery("oldname", "none")
+	newname := c.DefaultQuery("newname", "none")
+	if group != "noneasdf" {
+		fmt.Println("Attempting renaming ", group, oldname, newname)
+		renameNetwork(group, oldname, newname)
+		optimizePriors(group)
+		c.JSON(http.StatusOK, gin.H{"success": true, "message": "Finished"})
+	} else {
+		c.JSON(http.StatusOK, gin.H{"success": false, "message": "Error parsing request"})
+	}
+}
+
 func editName(c *gin.Context) {
 	group := c.DefaultQuery("group", "noneasdf")
 	location := c.DefaultQuery("location", "none")

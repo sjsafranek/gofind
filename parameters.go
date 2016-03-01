@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"path"
@@ -8,6 +9,11 @@ import (
 
 	"github.com/boltdb/bolt"
 )
+
+// PersistentParameters are not reloaded each time
+type PersistentParameters struct {
+	NetworkRenamed map[string][]string
+}
 
 // PriorParameters contains the network-specific bayesian priors and Mac frequency, as well as special variables
 type PriorParameters struct {
@@ -77,6 +83,12 @@ func NewResultsParameters() *ResultsParameters {
 	}
 }
 
+func NewPersistentParameters() *PersistentParameters {
+	return &PersistentParameters{
+		NetworkRenamed: make(map[string][]string),
+	}
+}
+
 func dumpParameters(res FullParameters) []byte {
 	defer timeTrack(time.Now(), "dumpParameters")
 	jsonByte, _ := res.MarshalJSON()
@@ -138,8 +150,54 @@ func openParameters(group string) (FullParameters, error) {
 	return ps, err
 }
 
+func openPersistentParameters(group string) (PersistentParameters, error) {
+	var persistentPs = *NewPersistentParameters()
+	db, err := bolt.Open(path.Join(RuntimeArgs.SourcePath, group+".db"), 0600, nil)
+	if err != nil {
+		Error.Println(err)
+	}
+	defer db.Close()
+
+	err = db.View(func(tx *bolt.Tx) error {
+		// Assume bucket exists and has keys
+		b := tx.Bucket([]byte("resources"))
+		if b == nil {
+			return fmt.Errorf("Resources dont exist")
+		}
+		v := b.Get([]byte("persistentParameters"))
+		json.Unmarshal(v, &persistentPs)
+		return nil
+	})
+	return persistentPs, err
+}
+
+func savePersistentParameters(group string, res PersistentParameters) error {
+	db, err := bolt.Open(path.Join(RuntimeArgs.SourcePath, group+".db"), 0600, nil)
+	if err != nil {
+		Error.Println(err)
+	}
+	defer db.Close()
+
+	err = db.Update(func(tx *bolt.Tx) error {
+		bucket, err := tx.CreateBucketIfNotExists([]byte("resources"))
+		if err != nil {
+			return fmt.Errorf("create bucket: %s", err)
+		}
+
+		jsonByte, _ := json.Marshal(res)
+		err = bucket.Put([]byte("persistentParameters"), jsonByte)
+		if err != nil {
+			return fmt.Errorf("could add to bucket: %s", err)
+		}
+		return err
+	})
+	Debug.Println("Saved")
+	return err
+}
+
 func getParameters(group string, ps *FullParameters) {
 	defer timeTrack(time.Now(), "getParameters")
+	persistentPs, err := openPersistentParameters(group)
 	ps.NetworkMacs = make(map[string]map[string]bool)
 	ps.NetworkLocs = make(map[string]map[string]bool)
 	ps.UniqueMacs = []string{}
@@ -201,40 +259,36 @@ func getParameters(group string, ps *FullParameters) {
 		return nil
 	})
 	ps.NetworkMacs = mergeNetwork(ps.NetworkMacs)
-	NetworkRenamed := make(map[string][]string)
-	NetworkRenamed["convention"] = []string{}
-	NetworkRenamed["convention"] = append(NetworkRenamed["convention"], "cc:03:fa:8e:b6:62")
-	NetworkRenamed["convention"] = append(NetworkRenamed["convention"], "5c:a4:8a:d6:fe:bd")
-	newNames := []string{}
-	for k := range NetworkRenamed {
-		newNames = append(newNames, k)
-	}
-	fmt.Println(ps.NetworkMacs)
-	for n := range ps.NetworkMacs {
-		fmt.Println(n)
-		renamed := false
-		for mac := range ps.NetworkMacs[n] {
-			for renamedN := range NetworkRenamed {
-				if stringInSlice(mac, NetworkRenamed[renamedN]) && !stringInSlice(n, newNames) {
-					fmt.Println(n, renamedN)
-					ps.NetworkMacs[renamedN] = make(map[string]bool)
-					for k, v := range ps.NetworkMacs[n] {
-						ps.NetworkMacs[renamedN][k] = v
+
+	// Rename the NetworkMacs
+	if len(persistentPs.NetworkRenamed) > 0 {
+		fmt.Println("Figuring out the renaming...")
+		newNames := []string{}
+		for k := range persistentPs.NetworkRenamed {
+			newNames = append(newNames, k)
+		}
+		for n := range ps.NetworkMacs {
+			renamed := false
+			for mac := range ps.NetworkMacs[n] {
+				for renamedN := range persistentPs.NetworkRenamed {
+					if stringInSlice(mac, persistentPs.NetworkRenamed[renamedN]) && !stringInSlice(n, newNames) {
+						ps.NetworkMacs[renamedN] = make(map[string]bool)
+						for k, v := range ps.NetworkMacs[n] {
+							ps.NetworkMacs[renamedN][k] = v
+						}
+						delete(ps.NetworkMacs, n)
+						renamed = true
 					}
-					fmt.Println(ps.NetworkMacs)
-					delete(ps.NetworkMacs, n)
-					renamed = true
+					if renamed {
+						break
+					}
 				}
 				if renamed {
 					break
 				}
 			}
-			if renamed {
-				break
-			}
 		}
 	}
-	fmt.Println(ps.NetworkMacs)
 
 	// Get the locations for each graph (Has to have network built first)
 	db.View(func(tx *bolt.Tx) error {

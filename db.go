@@ -8,6 +8,29 @@ import (
 	"github.com/boltdb/bolt"
 )
 
+func renameNetwork(group string, oldName string, newName string) {
+	Debug.Println("Opening parameters")
+	ps, _ := openParameters(group)
+	Debug.Println("Opening persistent parameters")
+	persistentPs, _ := openPersistentParameters(group)
+	Debug.Println("Looping network macs")
+	for n := range ps.NetworkMacs {
+		if n == oldName {
+			macs := []string{}
+			Debug.Println("Looping macs for ", n)
+			for mac := range ps.NetworkMacs[n] {
+				macs = append(macs, mac)
+			}
+			Debug.Println("Adding to persistentPs")
+			persistentPs.NetworkRenamed[newName] = macs
+			delete(persistentPs.NetworkRenamed, oldName)
+			break
+		}
+	}
+	Debug.Println("Saving persistentPs")
+	savePersistentParameters(group, persistentPs)
+}
+
 func getUsers(group string) []string {
 	if _, ok := usersCache[group]; ok {
 		return usersCache[group]
