@@ -176,8 +176,8 @@
                        </h3>
             </div>
             <div class="panel-body">
-              <p id="lastSeen{{$index}}">Last seen: {{ $user.Time }} at {{ $user.Location }}</p>
-              <p id="bayes{{$index}}"></p>
+              <p id="lastSeen{{$index}}"><strong>Last seen:</strong> {{ $user.Time }} at {{ $user.Location }}</p>
+              <p id="bayes{{$index}}"><strong>Confidence:</strong> ...loading...</strong></p>
             </div>
           </div>
         </div>
@@ -266,7 +266,7 @@
                 userkey = key;
                 console.log(key)
                 console.log(data['users'][key])
-                $('#lastSeen' + key).text("Last seen: " + data['users'][key]['time'] + " at " + data['users'][key]['location']);
+                $('#lastSeen' + key).html("<strong>Last seen:</strong> " + data['users'][key]['time'] + " at " + data['users'][key]['location']);
                 // $('#bayes' + key).text("Bayes: " + JSON.stringify(data['users'][key]['bayes']));
                 var tuples = [];
 
@@ -292,7 +292,7 @@
                     }
                 }
                 console.log(vals.join())
-               $('#bayes' + userkey).text("Bayes: " + vals.join())
+               $('#bayes' + userkey).html("<strong>Confidence:</strong> " + vals.join())
 
 
               }

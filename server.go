@@ -25,7 +25,7 @@ var RuntimeArgs struct {
 var VersionNum string
 
 func main() {
-	VersionNum = "0.01"
+	VersionNum = "0.02"
 	// _, executableFile, _, _ := runtime.Caller(0) // get full path of this file
 	cwd, _ := os.Getwd()
 	flag.StringVar(&RuntimeArgs.Port, "p", ":8003", "port to bind")
@@ -67,6 +67,8 @@ Options:`)
 	r.Static("static/", "static/")
 	store := sessions.NewCookieStore([]byte("secret"))
 	r.Use(sessions.Sessions("mysession", store))
+
+	// 404 page
 	r.NoRoute(func(c *gin.Context) {
 		c.HTML(http.StatusOK, "login.tmpl", gin.H{
 			"ErrorMessage": "Please login first.",
